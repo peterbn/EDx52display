@@ -1,0 +1,830 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>DirectOutput help</title>
+</head>
+<body>
+<h1><a id="DirectOutput_SDK"></a>DirectOutput SDK Reference</h1>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#Overview">Overview</a></li>
+<li><a href="#Setup">Setup</a></li>
+<li><a href="#DataSheets">Device Data Sheets</a></li>
+<li><a href="#DirectOutput_API_Reference">DirectOutput API Reference</a></li>
+<li><a href="#Samples">Samples</a></li>
+</ul>
+
+<h2><a id="Overview"></a>Overview</h2>
+
+The DirectOutput SDK can be used by programmers to write applications and 
+application plug-ins that use DirectOutput compatible devices to display information.
+These commponents can be written in C or C++.
+Typically these components will be used to do the following:<br />
+<ul>
+<li>Display information from a game or application.</li>
+<li>Recieve "Soft Button" notifications to provide application specific control.</li>
+<li>Act on "Soft Button" notifications to control the application or game.</li>
+</ul>
+DirectOutput uses a concept of Pages to seperate data. Each application can add one or more pages to the device, and each page holds a collection of output settings.
+The user navigates between pages with the NextPage and PreviousPage buttons on the device.
+<br/>
+For more information about DirectOutput, please visit the forum at <a href="http://www.saitekforum.com">www.saitekforum.com</a><br/>
+Please direct all DirectOutput programming questions and problems to the forum.
+
+<h2><a id="Setup"></a>Setup</h2>
+
+To build applications that use DirectOutput, you must create your application to load and import
+function calls from the dynamic library DirectOutput.dll.
+
+<h2><a id="DataSheets"></a>Device Data Sheets</h2>
+
+<ul>
+    <li><a href="DataSheet_X52Pro.htm">Saitek X52Pro Flight Controller</a></li>
+    <li><a href="DataSheet_FIP.htm">Saitek Pro Flight Instrument Panel</a></li>
+</ul>
+<br />
+
+<h2><a id="DirectOutput_API_Reference"></a>DirectOutput API Reference</h2>
+
+This section lists all the API functions and structures required to build DirectOutput enabled applications.<br />
+
+<table border="0" cellspacing="0" cellpadding="3">
+    <tr><th>Function</th><th>Description</th></tr>
+    <tr><td><a href="#DirectOutput_Initialize">DirectOutput_Initialize</a></td><td>Initialize the DirectOutput library</td></tr>
+    <tr><td><a href="#DirectOutput_Deinitialize">DirectOutput_Deinitialize</a></td><td>Clean up the DirectOutput library</td></tr>
+    <tr><td><a href="#DirectOutput_RegisterDeviceCallback">DirectOutput_RegisterDeviceCallback</a></td><td>Register a callback function to be called when a device is added or removed</td></tr>
+    <tr><td><a href="#DirectOutput_Enumerate">DirectOutput_Enumerate</a></td><td>Enumerate all currently attached DirectOutput devices.</td></tr>
+    <tr><td><a href="#DirectOutput_GetDeviceType">DirectOutput_GetDeviceType</a></td><td>Gets an identifier that identifies the device.</td></tr>
+    <tr><td><a href="#DirectOutput_GetDeviceInstance">DirectOutput_GetDeviceInstance</a></td><td>Gets an instance identifier to used with Microsoft DirectInput.</td></tr>
+    <tr><td><a href="#DirectOutput_GetSerialNumber">DirectOutput_GetSerialNumber</a></td><td>Gets serial number to used with Microsoft DirectInput.</td></tr>
+    <tr><td><a href="#DirectOutput_SetProfile">DirectOutput_SetProfile</a></td><td>Sets the profile on this device.</td></tr>
+    <tr><td><a href="#DirectOutput_RegisterSoftButtonCallback">DirectOutput_RegisterSoftButtonCallback</a></td><td>Registers a callback with a device, that gets called whenever a "Soft Button" is pressed or released.</td></tr>
+    <tr><td><a href="#DirectOutput_RegisterPageCallback">DirectOutput_RegisterPageCallback</a></td><td>Registers a callback with a device, that gets called whenever the active page is changed.</td></tr>
+    <tr><td><a href="#DirectOutput_AddPage">DirectOutput_AddPage</a></td><td>Adds a page to the specified device.</td></tr>
+    <tr><td><a href="#DirectOutput_RemovePage">DirectOutput_RemovePage</a></td><td>Removes a page.</td></tr>
+    <tr><td><a href="#DirectOutput_SetLed">DirectOutput_SetLed</a></td><td>Sets the state of a given LED indicator.</td></tr>
+    <tr><td><a href="#DirectOutput_SetString">DirectOutput_SetString</a></td><td>Sets a string value of a given string.</td></tr>
+    <tr><td><a href="#DirectOutput_SetImage">DirectOutput_SetImage</a></td><td>Sets the image data of a given image.</td></tr>
+    <tr><td><a href="#DirectOutput_SetImageFromFile">DirectOutput_SetImageFromFile</a></td><td>Sets the image from an image file.</td></tr>
+    <tr><td><a href="#DirectOutput_StartServer">DirectOutput_StartServer</a></td><td>Starts a Server application on the device.</td></tr>
+    <tr><td><a href="#DirectOutput_CloseServer">DirectOutput_CloseServer</a></td><td>Informs a Server application on the device to terminate.</td></tr>
+    <tr><td><a href="#DirectOutput_SendServerMsg">DirectOutput_SendServerMsg</a></td><td>Sends a message to a Server application on the device.</td></tr>
+    <tr><td><a href="#DirectOutput_SendServerFile">DirectOutput_SendServerFile</a></td><td>Sends a header and file to the Server application on the device.</td></tr>
+    <tr><td><a href="#DirectOutput_SaveFile">DirectOutput_SaveFile</a></td><td>Saves a file on the device.</td></tr>
+    <tr><td><a href="#DirectOutput_DisplayFile">DirectOutput_DisplayFile</a></td><td>Displays a file thats been saved on the device.</td></tr>
+    <tr><td><a href="#DirectOutput_DeleteFile">DirectOutput_DeleteFile</a></td><td>Deletes a file from the device.</td></tr>
+</table><br />
+<table border="0" cellspacing="0" cellpadding="3">
+    <tr><th>Callback Function</th><th>Description</th></tr>
+    <tr><td><a href="#DirectOutput_Enumerate_Callback">DirectOutput_Enumerate_Callback</a></td><td>Called when DirectOutput_Enumerate is called.</td></tr>
+    <tr><td><a href="#DirectOutput_Device_Callback">DirectOutput_Device_Callback</a></td><td>Called whenever a DirectOutput device is added or removed.</td></tr>
+    <tr><td><a href="#DirectOutput_SoftButton_Callback">DirectOutput_SoftButton_Callback</a></td><td>Called whenever a "Soft Button" is pressed or released.</td></tr>
+    <tr><td><a href="#DirectOutput_Page_Callback">DirectOutput_Page_Callback</a></td><td>Called whenever the active page is changed.</td></tr>
+</table>
+
+<br /><hr />
+<h3><a id="DirectOutput_Initialize"></a>DirectOutput_Initialize</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_Initialize(const wchar_t* wszAppName);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>wszAppName</i><br />
+[in] A null-terminated wide character string that specifies the name of the application. Optional<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_OUTOFMEMORY</b><br />
+There was insufficient memory to complete this call.<br />
+<b>E_INVALIDARG</b><br />
+The argument is invalid.<br />
+<b>E_HANDLE</b><br />
+The DirectOutputManager prcess could not be found.
+<h4>Notes</h4>
+This function must be called before calling any others. Call this function when you want to initialize the DirectOutput library.
+
+<br /><hr />
+<h3><a id="DirectOutput_Deinitialize"></a>DirectOutput_Deinitialize</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_Deinitialize();
+</code>
+</pre>
+<h4>Parameters</h4>
+This function does not take any parameters
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_HANDLE</b><br />
+DirectOutput was not initialized or was already deinitialized.<br />
+<h4>Notes</h4>
+This function must be called before termination. Call this function to clean up any resources allocated by <a href="#DirectOutput_Initialize">DirectOutput_Initialize</a>
+
+<br /><hr />
+<h3><a id="DirectOutput_RegisterDeviceCallback"></a>DirectOutput_RegisterDeviceCallback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_RegisterDeviceCallback(Pfn_DirectOutput_Device_Callback pfnCallback, void* pvParam);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>pfnCallback</i><br />
+[in] A pointer to the callback function to be called whenever a device is added or removed.<br />
+<i>pvParam</i><br />
+[in] An application supplied context pointer that will be passed to the callback function.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully<br />
+<b>E_HANDLE</b><br />
+DirectOutput was not initialized.<br />
+<h4>Notes</h4>
+Passing a NULL function pointer will disable the callback.
+
+<br /><hr />
+<h3><a id="DirectOutput_Enumerate"></a>DirectOutput_Enumerate</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_Enumerate(Pfn_DirectOutput_EnumerateCallback pfnCallback, void* pvParam);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>pfnCallback</i><br />
+[in] A pointer to the callback function to be called for each detected device.<br />
+<i>pvParam</i><br />
+[in] An application supplied contect pointer that will be passed to the callback function.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_HANDLE</b><br />
+DirectOutput was not initialized.<br />
+<h4>Notes</h4>
+This function has changed from previous releases.
+
+<br /><hr />
+<h3><a id="DirectOutput_GetDeviceType"></a>DirectOutput_GetDeviceType</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_GetDeviceType(void* hDevice, LPGUID pGuidType);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A void pointer handle that was supplied in the device change callback.<br />
+<i>pGuidType</i><br />
+[out] A pointer to a GUID value that will recieve the type identifier of this device.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_INVALIDARG</b><br />
+An argument is invalid.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+Refer to the list of type GUIDs to find out about what features are available on each device.
+
+<br /><hr />
+<h3><a id="DirectOutput_GetDeviceInstance"></a>DirectOutput_GetDeviceInstance</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_GetDeviceInstance(void* hDevice, LPGUID pGuidInstance);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A void pointer handle that was supplied in the device change callback.<br />
+<i>pGuidInstance</i><br />
+[out] A pointer to a GUID value that will recieve the instance identifier of this device.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_NOTIMPL</b><br />
+This device does not support DirectInput.<br />
+<b>E_INVALIDARG</b><br />
+An argument is invalid.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+Use pGuidInstance in IDirectInput::CreateDevice to create the IDirectInputDevice that corrresponds to this DirectOutput device.
+<pre>
+<code>
+    GUID gdInstance;
+    HRESULT hr = DirectOutput_GetDeviceInstance(hDevice, &gdInstance);
+    if (hr == S_OK)
+    {
+        IDirectInputDevice* pDevice;
+        hr = pDirectInput->CreateDevice(gdInstance, &pDevice, NULL);
+        if (SUCCEEDED(hr))
+        {
+            // setup pDevice as a joystick and start polling for data.
+        }
+    }
+</code>
+</pre>
+
+<br /><hr />
+<h3><a id="DirectOutput_GetSerialNumber"></a>DirectOutput_GetSerialNumber</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_GetSerialNumber(void* hDevice, wchar_t* pszSerialNumber, DWORD dwSize);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A void pointer handle that was supplied in the device change callback.<br />
+<i>pszSerialNumber</i><br />
+[out] String buffer to hold the serial number of the device. The String can be empty if no serial number associated with the device.<br />
+<i>dwSize</i><br />
+[in] Specify the number of characters of the string buffer. The value of this parameter shouldn't be greater than 16. Otherwise, the string buffer is truncated into 16 characters.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+
+<br /><hr />
+<h3><a id="DirectOutput_SetProfile"></a>DirectOutput_SetProfile</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SetProfile(void* hDevice, DWORD cchFilename, const wchar_t* wszFilename);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>cchFilename</i><br />
+[in] The number of wide characters in the filename parameter, wszFilename.<br />
+<i>wszFilename</i><br />
+[in] A NULL-terminated string containing the full path and filename of the profile to activate.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support profiling.<br />
+<b>E_INVALIDARG</b><br />
+cchFilename is zero OR wszFilename is NULL.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+Passing in a NULL pointer to wszFilename and 0 to cchFilename will clear the current profile.
+
+<br /><hr />
+<h3><a id="DirectOutput_RegisterSoftButtonCallback"></a>DirectOutput_RegisterSoftButtonCallback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_RegisterSoftButtonCallback(void* hDevice, Pfn_DirectOutput_SoftButton_Callback pfnCallback, void* pvContext);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>pfnCallback</i><br />
+[in] A pointer to the callback function to be called whenever a "Soft Button" is pressed or released.<br />
+<i>pvContext</i><br />
+[in] An application supplied context pointer that will be passed to the callback function.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+Passing a NULL function pointer will disable the callback.
+
+<br /><hr />
+<h3><a id="DirectOutput_RegisterPageCallback"></a>DirectOutput_RegisterPageCallback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_RegisterPageCallback(void* hDevice, Pfn_DirectOutput_Page_Callback pfnCallback, void* pvContext);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>pfnCallback</i><br />
+[in] A pointer to the callback function to be called whenever the active page is changed.<br />
+<i>pvContext</i><br />
+[in] An application supplied context pointer that will be passed to the callback function.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+Adding a page with an existing page id is not allowed. The page id only has to be unique on a per application basis.
+The callback will not be called when a page is added as the active page with a call to DirectOutput_AddPage(hDevice, dwPage, wszName, FLAG_SET_AS_ACTIVE);
+Passing a NULL function pointer will disable the callback.
+
+<br /><hr />
+<h3><a id="DirectOutput_AddPage"></a>DirectOutput_AddPage</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_AddPage(void* hDevice, DWORD dwPage, DWORD dwFlags);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] A numeric identifier of a page. Usually this is the 0 based number of the page.<br />
+<i>dwFlags</i><br />
+[in] If this contains FLAG_SET_AS_ACTIVE, then this page will become the active page. If zero, this page will not change the active page.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_INVALIDARG</b><br />
+The <i>dwPage</i> parameter already exists.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+Only one page per-application per-device should have <i>dwFlags</i> contain FLAG_SET_AS_ACTIVE. The plugin is not informed about the active page change if the FLAG_SET_AS_ACTIVE is set.
+
+<br /><hr />
+<h3><a id="DirectOutput_RemovePage"></a>DirectOutput_RemovePage</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_RemovePage(void* hDevice, DWORD dwPage);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] A numeric identifier of a page. Usually this is the 0 based number of the page.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completed successfully.<br />
+<b>E_INVALIDARG</b><br />
+The <i>dwPage</i> argument does not reference a valid page id.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_SetLed"></a>DirectOutput_SetLed</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SetLed(void* hDevice, DWORD dwPage, DWORD dwIndex, DWORD dwValue);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] A numeric identifier of a page. Usually this is the 0 based number of the page.<br />
+<i>dwIndex</i><br />
+[in] A numeric identifier of the LED. Refer to the data sheet for each device to determine what LEDs are present.<br />
+<i>dwValue</i><br />
+[in] The numeric value of a given state of a LED. Refer to the data sheet for each device to determine what are legal values.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_PAGENOTACTIVE</b><br />
+The specified page is not active. Displaying information is not permitted when the page is not active.<br />
+<b>E_INVALIDARG</b><br />
+The <i>dwPage</i> argument does not reference a valid page id, or the <i>dwIndex</i> argument does not specifiy a valid LED id.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+<i>dwValue</i> is usually 0 (off) or 1 (on).
+
+<br /><hr />
+<h3><a id="DirectOutput_SetString"></a>DirectOutput_SetString</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SetString(void* hDevice, DWORD dwPage, DWORD dwIndex, DWORD cchValue, const wchar_t* wszValue);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] A numeric identifier of a page. Usually this is the 0 based number of the page.<br />
+<i>dwIndex</i><br />
+[in] A numeric identifier of the string. Refer to the data sheet for each device to determine what strings are present.<br />
+<i>cchValue</i><br />
+[in] The number of characters (wchar_t) in the string data.<br />
+<i>wszValue</i><br />
+[in] A null-terminated wide character string that specifies the value to display. Providing a null pointer will clear the string.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_PAGENOTACTIVE</b><br />
+The specified page is not active. Displaying information is not permitted when the page is not active.<br />
+<b>E_INVALIDARG</b><br />
+The <i>dwPage</i> argument does not reference a valid page id, or the <i>dwIndex</i> argument does not reference a valid string id.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_SetImage"></a>DirectOutput_SetImage</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SetImage(void* hDevice, DWORD dwPage, DWORD dwIndex, DWORD cbValue, const LPBYTE pbValue);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] A numeric identifier of a page. Usually this is the 0 based number of the page.<br />
+<i>dwIndex</i><br />
+[in] A numeric identifier of the image. Refer to the data sheet for each device to determine what images are present.<br />
+<i>cbValue</i><br />
+[in] The number of bytes in <i>pbValue</i><br />
+<i>pbValue</i><br />
+[in] An array of bytes of <i>cbValue</i> bytes long that represents the raw bitmap to display on the screen.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_PAGENOTACTIVE</b><br />
+The specified page is not active. Displaying information is not permitted when the page is not active.<br />
+<b>E_INVALIDARG</b><br />
+The <i>dwPage</i> argument does not reference a valid page id, or the <i>dwIndex</i> argument does not reference a valid image id.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+    The buffer passed must be the correct size for the specified image.
+    <br />
+    This call sends the buffer directly to the device, so the format of the data is 
+    device specific. Refer to the device data sheet for more details on the image 
+    data format.<br />
+    
+    <hr />
+
+<h3><a id="DirectOutput_SetImageFromFile"></a>DirectOutput_SetImageFromFile</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SetImageFromFile(void* hDevice, DWORD dwPage, DWORD dwIndex, DWORD cchFilename, const wchar_t* wszFilename);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] A numeric identifier of a page. Usually this is the 0 based number of the page.<br />
+<i>dwIndex</i><br />
+[in] A numeric identifier of the image. Refer to the data sheet for each device to determine what images are present.<br />
+<i>cchFilename</i><br />
+[in] The number of characters (wchar_t) in the filename string.<br />
+<i>wszFilename</i><br />
+[in] The NULL-terminated full path to the image to load.
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_PAGENOTACTIVE</b><br />
+The specified page is not active. Displaying information is not permitted when the page is not active.<br />
+<b>E_INVALIDARG</b><br />
+The <i>dwPage</i> argument does not reference a valid page id, or the <i>dwIndex</i> argument does not reference a valid image id.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+This call reads all the data from the file and sends this directly to the device, so the format of the data is device specific. 
+Refer to the device data sheet for more details on the image data format.
+<br />
+Unless specified by the device data sheet you cannot use this function to directly send image files to the device.
+<hr />
+<h3><a id="DirectOutput_StartServer"></a>DirectOutput_StartServer</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_StartServer(void* hDevice, DWORD cchFilename, const wchar_t* wszFilename, LPDWORD pdwServerId, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>cchFilename</i><br />
+[in] The number of characters (wchar_t) in the filename string.<br />
+<i>wszFilename</i><br />
+[in] The NULL-terminated full path to the Server application.<br />
+<i>pdwServerId</i><br />
+[out] A pointer to a DWORD that recieves this server id.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support server applications.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_CloseServer"></a>DirectOutput_CloseServer</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_CloseServer(void* hDevice, DWORD dwServerId, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwServerId</i><br />
+[in] The server id to close.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support server applications.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_SendServerMsg"></a>DirectOutput_SendServerMsg</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SendServerMsg(void* hDevice, DWORD dwServerId, DWORD dwRequest, DWORD dwPage, DWORD cbIn, const void* pvIn, DWORD cbOut, void* pvOut, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwServerId</i><br />
+[in] The server id to close.<br />
+<i>dwPage</i><br />
+[in] The page id that is related to this server.<br />
+<i>cbIn</i><br />
+[in] The number of bytes in the input buffer.<br />
+<i>pvIn</i><br />
+[in] The input buffer of this message.<br />
+<i>cbOut</i><br />
+[in] The number of bytes in the output buffer.<br />
+<i>pvOut</i><br />
+[out] A pointer to a caller allocated buffer that recieves the output data.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support server applications.<br />
+<b>E_PAGENOTACTIVE</b><br />
+The specified page is not active and the server application attempted to access the display.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+The page does have to be active if the server accesses the display.
+The page does not have to be active if the server does not access the display.
+
+<br /><hr />
+<h3><a id="DirectOutput_SendServerFile"></a>DirectOutput_SendServerFile</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SendServerFile(void* hDevice, DWORD dwServerId, DWORD dwRequest, DWORD dwPage, DWORD cbInHdr, const void* pvInHdr, DWORD cchFile, const wchar_t* wszFile, DWORD cbOut, void* pvOut, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwServerId</i><br />
+[in] The server id to close.<br />
+<i>dwPage</i><br />
+[in] The page id that is related to this server.<br />
+<i>cbInHdr</i><br />
+[in] The number of bytes in the input buffer header.<br />
+<i>pvInHdr</i><br />
+[in] The input buffer of this message's header.<br />
+<i>cchFile</i><br />
+[in] The number of characters (wchar_t) in the filename.<br />
+<i>wszFile</i><br />
+[in] A NULL-terminated string of the full path to the file to send.<br />
+<i>cbOut</i><br />
+[in] The number of bytes in the output buffer.<br />
+<i>pvOut</i><br />
+[out] A pointer to a caller allocated buffer that recieves the output data.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support server applications.<br />
+<b>E_PAGENOTACTIVE</b><br />
+The specified page is not active and the server application attempted to access the display.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+The page does have to be active if the server accesses the display.
+The page does not have to be active if the server does not access the display.
+
+<br /><hr />
+<h3><a id="DirectOutput_SaveFile"></a>DirectOutput_SaveFile</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_SaveFile(void* hDevice, DWORD dwPage, DWORD dwFile, DWORD cchFilename, const wchar_t* wszFilename, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+The page id of the page to associate with this file.<br />
+<i>dwFile</i><br />
+[in] The caller supplied file id to use for this file.<br />
+<i>cchFilename</i><br />
+[in] The number of characters (wchar_t) in the filename.<br />
+<i>wszFilename</i><br />
+[in] A NULL-terminated string of the full path to the file to save.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support saving files.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_DisplayFile"></a>DirectOutput_DisplayFile</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_DisplayFile(void* hDevice, DWORD dwPage, DWORD dwIndex, DWORD dwFile, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] The page id of the page to associate with this file.<br />
+<i>dwIndex</i><br />
+[in] The index of the image to display this file on.<br />
+<i>dwFile</i><br />
+[in] The caller supplied file id to use for this file.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support displaying files.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_DeleteFile"></a>DirectOutput_DeleteFile</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    HRESULT DirectOutput_DeleteFile(void* hDevice, DWORD dwPage, DWORD dwFile, PSRequestStatus psStatus);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to a device.<br />
+<i>dwPage</i><br />
+[in] The page id of the page to associate with this file.<br />
+<i>dwFile</i><br />
+[in] The caller supplied file id to use for this file.<br />
+<i>psStatus</i><br />
+[out] A pointer to a SRequestStatus structure to recieve extended error information. Can be NULL.<br />
+<h4>Return Values</h4>
+<b>S_OK</b><br />
+The call completes successfully.<br />
+<b>E_NOTIMPL</b><br />
+The device does not support deleting files.<br />
+<b>E_OUTOFMEMORY</b><br />
+Insufficient memory to complete the request.<br />
+<b>E_HANDLE</b><br />
+The device handle specified is invalid.<br />
+<h4>Notes</h4>
+
+<br /><hr />
+<h3><a id="DirectOutput_Enumerate_Callback"></a>DirectOutput_Enumerate_Callback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    void __stdcall DirectOutput_Enumerate_Callback(void* hDevice, void* pvContext);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to the device that changed.<br />
+<i>pvContext</i><br />
+[in] The application defined context value passed to DirectOutput_Enumerate<br />
+<h4>Return Values</h4>
+This callback does not return a value.<br />
+<h4>Notes</h4>
+This callback will be called whenever a DirectOutput is present during a call to DirectOutput_Enumerate.<br />
+
+<br /><hr />
+<h3><a id="DirectOutput_Device_Callback"></a>DirectOutput_Device_Callback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    void __stdcall DirectOutput_Device_Callback(void* hDevice, bool bAdded, void* pvContext);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to the device that changed.<br />
+<i>bAdded</i><br />
+[in] true if the device was added, false if the device was removed.<br />
+<i>pvContext</i><br />
+[in] The application defined context value passed to DirectOutput_RegisterDeviceCallback<br />
+<h4>Return Values</h4>
+This callback does not return a value.
+<h4>Notes</h4>
+This callback will be called whenever a DirectOutput device is added to, or removed from, the system. Once a device has been removed, do not call any functions using the specified device handle (hDevice).
+
+<br /><hr />
+<h3><a id="DirectOutput_SoftButton_Callback"></a>DirectOutput_SoftButton_Callback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    void __stdcall DirectOutput_SoftButton_Callback(void* hDevice, DWORD dwButtons, void* pvContext);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to the device that changed.<br />
+<i>dwButtons</i><br />
+[in] A bit mask that specifies what buttons are pressed. Refer to the device data sheet to determine the allowed buttons.<br />
+<i>pvContext</i><br />
+[in] The application defined context value passed to DirectOutput_RegisterSoftButtonCallback<br />
+<h4>Return Values</h4>
+This callback does not return a value.
+<h4>Notes</h4>
+This callback will be called whenever a soft button's state changes. You will only recieve this notification if one of the pages you added is currently active.
+
+<br /><hr />
+<h3><a id="DirectOutput_Page_Callback"></a>DirectOutput_Page_Callback</h3>
+<h4>Syntax</h4>
+<pre>
+<code>
+    void __stdcall DirectOutput_Page_Callback(void* hDevice, DWORD dwPage, bool bActivated, void* pvContext);
+</code>
+</pre>
+<h4>Parameters</h4>
+<i>hDevice</i><br />
+[in] A handle to the device that changed.<br />
+<i>dwPage</i><br />
+[in] The page identifier passed to DirectOutput_AddPage of this page.<br />
+<i>bActivated</i><br />
+[in] true if this page has become the active page, false if this page was the active page.<br />
+<i>pvContext</i><br />
+[in] The application defined context value passed to DirectOutput_RegisterPageCallback<br />
+<h4>Return Values</h4>
+This callback does not return a value.
+<h4>Notes</h4>
+This callback is called when a page changed. You will only recieve notifications about pages you added. 
+
+<br /><hr />
+<h2><a id="Samples"></a>Samples</h2>
+Samples can be found under the &lt;SDK&gt;\Samples folder<br />
+<table>
+    <tr><th>Sample Name</th><th>Description</th><th>Requirements</th></tr>
+    <tr><td>Test</td><td>Windows application (using WTL) that demonstrates device enumeration, softbuttons and displaying information on the devices</td><td><a href="http://msdn.microsoft.com/vstudio/express/visualc/">Microsoft Visual Studio Express (C++)</a>, <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&displaylang=en">Platform SDK</a>, <a href="http://sourceforge.net/projects/wtl/">WTL</a></td></tr>
+</table>
+<br /><hr />
+
+</body>
+</html>

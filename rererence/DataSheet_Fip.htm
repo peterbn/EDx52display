@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>Data Sheet for Pro Flight Instrument Panel</title>
+</head>
+<body>
+<h1>Data Sheet for Pro Flight Instrument Panel</h1>
+<br />
+<table border="0" cellspacing="0" cellpadding="3">
+    <tr><th>Led ID</th><th>Values</th><th>Description</th></tr>
+    <tr><td>0</td><td>0, 1</td><td>Button 1 LED (top)</td></tr>
+    <tr><td>1</td><td>0, 1</td><td>Button 2 LED</td></tr>
+    <tr><td>2</td><td>0, 1</td><td>Button 3 LED</td></tr>
+    <tr><td>3</td><td>0, 1</td><td>Button 4 LED</td></tr>
+    <tr><td>4</td><td>0, 1</td><td>Button 5 LED</td></tr>
+    <tr><td>5</td><td>0, 1</td><td>Button 6 LED (bottom)</td></tr>
+</table>
+<br />
+<table border="0" cellspacing="0" cellpadding="3">
+    <tr><th>String ID</th><th>Length</th><th>Description</th></tr>
+    <tr><td>This device does not have any string displays.</td></tr>
+</table>
+<br />
+<table border="0" cellspacing="0" cellpadding="3">
+    <tr><th>Image ID</th><th>Size</th><th>Description</th></tr>
+    <tr><td>0</td><td>320 x 240 pixels</td><td>Display an image on the FIP, data passed must be 
+        24bpp RGB. The buffer size must be 320*240*3 = 230400 bytes. It is common to use 
+        the Bitmap image format for the FIP becuase the image data section of a 24bpp 
+        RGB Bipmap file conforms to the FIP buffer requirements. See <a href="DirectOutput.htm#DirectOutput_SetImage">Set_Image</a> and <a href="DirectOutput.htm#DirectOutput_SetImageFromFile">Set_ImageFromFile</a> for details 
+        on how to send images to the FIP.</td></tr>
+</table>
+<br />
+<table border="0" cellspacing="0" cellpadding="3">
+    <tr><th>SoftButton Name</th><th>Description</th></tr>
+    <tr><td>SoftButton_Up</td><td>1 click of the right rotary dial clockwize. Note, this will pulse the button for each notch in the rotary dial.</td></tr>
+    <tr><td>SoftButton_Down</td><td>1 click of the right rotary dial anticlockwize. Note, this will pulse the button for each notch in the rotary dial.</td></tr>
+    <tr><td>SoftButton_Left</td><td>1 click of the left rotary dial anticlockwize. Note, this will pulse the button for each notch in the rotary dial.</td></tr>
+    <tr><td>SoftButton_Right</td><td>1 click of the left rotary dial clockwize. Note, this will pulse the button for each notch in the rotary dial.</td></tr>
+    <tr><td>SoftButton_1</td><td>Button 1 on the left of the display</td></tr>
+    <tr><td>SoftButton_2</td><td>Button 2 on the left of the display</td></tr>
+    <tr><td>SoftButton_3</td><td>Button 3 on the left of the display</td></tr>
+    <tr><td>SoftButton_4</td><td>Button 4 on the left of the display</td></tr>
+    <tr><td>SoftButton_5</td><td>Button 5 on the left of the display</td></tr>
+    <tr><td>SoftButton_6</td><td>Button 6 on the left of the display</td></tr>
+    <tr><td><i>Next Page</i></td><td>The page up button (below the display, center bottom). Note, this notification is not recieved by the plugin.</td></tr>
+    <tr><td><i>Previous Page</i></td><td>The page down button (below the display, center top). Note, this notification is not recieved by the plugin.</td></tr>
+</table>
+<br />
+
+<a href="DirectOutput.htm">Back to DirectOutput documentation</a>
+</body>
+</html>
