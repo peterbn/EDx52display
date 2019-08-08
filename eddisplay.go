@@ -3,34 +3,24 @@ package main
 import (
 	"fmt"
 	"os/exec"
-	"time"
+
+	"github.com/peterbn/EDx52display/conf"
+	"github.com/peterbn/EDx52display/edreader"
+	"github.com/peterbn/EDx52display/mfd"
 )
 
 func main() {
+	conf := conf.LoadConf()
+	edreader.Start(conf)
+	defer edreader.Stop()
 
-	var mfd = MfdDisplay{
-		Pages: []MfdPage{MfdPage{Lines: []string{"Time since start", "0s"}}},
+	var mfdData = mfd.Display{
+		Pages: []mfd.Page{mfd.Page{Lines: []string{"Time since start", "0s"}}},
 	}
-	writeMFD(mfd)
+	mfd.Write(mfdData)
 
-	const delay = 1
-	ticker := time.NewTicker(delay * time.Second)
-	go func() {
-
-		var i = 0
-
-		for range ticker.C {
-			i = i + delay
-			dString := fmt.Sprintf("%ds", i)
-			var mfdInner = MfdDisplay{
-				Pages: []MfdPage{MfdPage{Lines: []string{"Time since start", dString}}},
-			}
-
-			writeMFD(mfdInner)
-		}
-	}()
 	// Start the file monitor for updates
-	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfdFilename)
+	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfd.Filename)
 	cmd.Start()
 	defer cmd.Process.Kill()
 
