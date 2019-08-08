@@ -1,14 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
 	"time"
 )
-
-const filename = "mfd.json"
 
 func main() {
 
@@ -34,29 +30,9 @@ func main() {
 		}
 	}()
 	// Start the file monitor for updates
-	cmd := exec.Command("X52MFDDriver.exe", ".\\"+filename)
+	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfdFilename)
 	cmd.Start()
 	defer cmd.Process.Kill()
 
 	fmt.Scanln() // keep it running until I get input
-}
-
-func writeMFD(mfd MfdDisplay) {
-	data, err := json.Marshal(mfd)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	f, err := os.Create(filename)
-	if err != nil {
-
-		fmt.Println(err)
-		return
-
-	}
-	defer f.Close()
-
-	f.Write(data)
-	f.Sync()
 }
