@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/peterbn/EDx52display/conf"
@@ -21,6 +22,7 @@ func main() {
 
 	// Start the file monitor for updates
 	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfd.Filename)
+	cmd.Stdout = os.Stdout
 	cmd.Start()
 	defer cmd.Process.Kill()
 
