@@ -43,7 +43,7 @@ func init() {
 }
 
 func handleCargoFile(file string) {
-
+	log.Println("Loading cargo from file", file)
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		fmt.Println(err)
@@ -56,11 +56,9 @@ func handleCargoFile(file string) {
 	display = append(display, fmt.Sprintf("Cargo: %d", cargo.Count))
 	display = append(display, renderCargo(cargo)...)
 
-	var mfdData = mfd.Display{
-		Pages: []mfd.Page{mfd.Page{Lines: display}},
-	}
+	Mfd.Pages[pageCargo].Lines = display
 
-	mfd.Write(mfdData)
+	mfd.Write(Mfd)
 }
 
 func renderCargo(cargo Cargo) []string {

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+
+	"github.com/peterbn/EDx52display/mfd"
 
 	"github.com/fsnotify/fsnotify"
 
@@ -13,9 +16,25 @@ import (
 
 var watcher fsnotify.Watcher
 
+const (
+	pageCargo = iota
+)
+
+// Mfd is the MFD display structure that will be used by this module. The number of pages should not be changed
+var Mfd = mfd.Display{
+	Pages: []mfd.Page{
+		mfd.Page{
+			Lines: []string{"Cargo: "},
+		},
+	},
+}
+
 // Start starts the Elite Dangerous journal reader routine
 func Start(cfg conf.Conf) {
-	fmt.Println(cfg)
+	fmt.Println("Config: ", cfg)
+
+	// Read in the files at start before we start watching, to initialize
+	handleCargoFile(path.Join(cfg.JournalsFolder, FileCargo))
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
