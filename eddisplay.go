@@ -20,7 +20,6 @@ func main() {
 	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfd.Filename)
 	cmd.Stdout = os.Stdout
 	cmd.Start()
-	defer cmd.Process.Kill()
 
 	fmt.Scanln() // keep it running until I get input
 }
