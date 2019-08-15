@@ -2,13 +2,11 @@ package edreader
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"sort"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/peterbn/EDx52display/mfd"
 
 	"github.com/fsnotify/fsnotify"
@@ -47,7 +45,7 @@ var Mfd = mfd.Display{
 }
 
 // PrevMfd is the previous Mfd written to file, to be used for comparisons and avoid superflous updates.
-var PrevMfd = Mfd
+var PrevMfd = Mfd.Copy()
 
 // Start starts the Elite Dangerous journal reader routine
 func Start(cfg conf.Conf) {
@@ -81,8 +79,7 @@ func findJournalFile(folder string) string {
 func swapMfd() {
 	eq := cmp.Equal(Mfd, PrevMfd)
 	if !eq {
-		log.Println("Updating display with new info")
 		mfd.Write(Mfd)
-		PrevMfd = Mfd
+		PrevMfd = Mfd.Copy()
 	}
 }

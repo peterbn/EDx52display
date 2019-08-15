@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/buger/jsonparser"
+	"github.com/peterbn/EDx52display/mfd"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -167,27 +168,31 @@ func handleJournalFile(filename string) {
 
 	loc := []string{locationHeader}
 	loc = append(loc, state.StarSystem)
-	if state.Docked {
+	if state.StationName != "" {
 		loc = append(loc, state.StationName)
-		if len(state.StationType) > 0 {
-			loc = append(loc, state.StationType)
-		}
-		loc = append(loc, "Docked")
-	} else {
-		if state.Body != "" {
-			loc = append(loc, state.Body)
-		}
-		if state.BodyType != "" {
-			loc = append(loc, state.BodyType)
-		}
+	}
+	if len(state.StationType) > 0 {
+		loc = append(loc, state.StationType)
+	}
+	if state.Body != "" {
+		loc = append(loc, state.Body)
+	}
+	if state.BodyType != "" {
+		loc = append(loc, state.BodyType)
 	}
 	if state.HasCoordinates {
 		loc = append(loc, fmt.Sprintf("Lat: %.3f", state.Latitude))
 		loc = append(loc, fmt.Sprintf("Lon: %.3f", state.Longitude))
 	}
 
-	Mfd.Pages[pageCommander].Lines = cmdr
-	Mfd.Pages[pageLocation].Lines = loc
+	if state.Supercruise {
+		loc = append(loc, "In Supercruise")
+	}
+	if state.Docked {
+		loc = append(loc, "Docked")
+	}
+	Mfd.Pages[pageCommander] = mfd.Page{Lines: cmdr}
+	Mfd.Pages[pageLocation] = mfd.Page{Lines: loc}
 }
 
 // ParseJournalLine parses a single line of the journal and returns the new state after parsing.
@@ -208,6 +213,8 @@ func ParseJournalLine(line []byte) Journalstate {
 		eSupercruiseEntry(p)
 	case "SupercruiseExit":
 		eSupercruiseExit(p)
+	case "FSDJump":
+		eFSDJump(p)
 	case "Touchdown":
 		eTouchDown(p)
 	case "Docked":
@@ -316,8 +323,7 @@ func ParseJournalLine(line []byte) Journalstate {
 		"EngineerProgress",
 		"EscapeInterdiction",
 		"Fileheader",
-		"FSDJump",
-		"FSDTarget", // Totally gonna parse this and request information from edsm.net o_O
+ 		"FSDTarget", // Totally gonna parse this and request information from edsm.net o_O
 		"FSSAllBodiesFound",
 		"FSSDiscoveryScan",
 		"FSSSignalDiscovered",
@@ -424,6 +430,11 @@ func eSupercruiseEntry(p parser) {
 
 func eSupercruiseExit(p parser) {
 	eLocation(p)
+}
+
+func eFSDJump(p parser) {
+	eLocation(p)
+	state.Supercruise = true
 }
 
 func eTouchDown(p parser) {

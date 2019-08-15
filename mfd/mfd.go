@@ -14,9 +14,27 @@ type Display struct {
 	Pages []Page `json:"pages"`
 }
 
+// Copy creates a deep copy of this Display
+func (d Display) Copy() Display {
+	pc := []Page{}
+	for _, p := range d.Pages {
+		pc = append(pc, p.Copy())
+	}
+	dc := Display{Pages: pc}
+
+	return dc
+}
+
 // Page is a single page of information to show on the MFD
 type Page struct {
 	Lines []string `json:"lines"`
+}
+
+// Copy makes a deep copy of this Page
+func (p Page) Copy() Page {
+	nLines := make([]string, len(p.Lines))
+	copy(nLines, p.Lines)
+	return Page{Lines: nLines}
 }
 
 // Write writes the MFD file
