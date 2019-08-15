@@ -1,7 +1,6 @@
 package edreader
 
 import (
-	"fmt"
 	"path/filepath"
 	"sort"
 	"time"
@@ -49,20 +48,24 @@ var PrevMfd = Mfd.Copy()
 
 // Start starts the Elite Dangerous journal reader routine
 func Start(cfg conf.Conf) {
-	fmt.Println("Config: ", cfg)
-
+	// Update immediately, to ensure the mfd.json file exist
+	updateMFD(cfg)
 	tick := time.NewTicker(time.Duration(cfg.RefreshRateMS) * time.Millisecond)
 
 	go func() {
 		for range tick.C {
-			// Read in the files at start before we start watching, to initialize
-			journalFile := findJournalFile(cfg.JournalsFolder)
-			handleJournalFile(journalFile)
-
-			handleCargoFile(filepath.Join(cfg.JournalsFolder, FileCargo))
-			swapMfd()
+			updateMFD(cfg)
 		}
 	}()
+}
+
+func updateMFD(cfg conf.Conf) {
+	// Read in the files at start before we start watching, to initialize
+	journalFile := findJournalFile(cfg.JournalsFolder)
+	handleJournalFile(journalFile)
+
+	handleCargoFile(filepath.Join(cfg.JournalsFolder, FileCargo))
+	swapMfd()
 }
 
 // Stop closes the watcher again

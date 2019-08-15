@@ -18,7 +18,7 @@ func main() {
 
 	// Start the file monitor for updates
 	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfd.Filename)
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = os.Stdout // ensure the driver's output is also sent to the console
 	cmd.Start()
 
 	fmt.Scanln() // keep it running until I get input

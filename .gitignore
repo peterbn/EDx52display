@@ -25,3 +25,5 @@ $RECYCLE.BIN/
 # Except the required dependency: 
 !X52MFDDriver.exe 
 mfd.json
+
+Release/
