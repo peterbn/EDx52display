@@ -3,9 +3,11 @@ package edreader
 import (
 	"fmt"
 	"log"
-	"os"
-	"path"
 	"path/filepath"
+	"sort"
+	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/peterbn/EDx52display/mfd"
 
@@ -16,81 +18,71 @@ import (
 
 var watcher fsnotify.Watcher
 
+var tick time.Ticker
+
 const (
-	pageCargo = iota
+	pageCommander = iota
+	pageCargo
+	pageLocation
+)
+
+const (
+	commanderHeader = "#     CMDR     #"
+	locationHeader  = "#   Location   #"
 )
 
 // Mfd is the MFD display structure that will be used by this module. The number of pages should not be changed
 var Mfd = mfd.Display{
 	Pages: []mfd.Page{
 		mfd.Page{
+			Lines: []string{commanderHeader},
+		},
+		mfd.Page{
 			Lines: []string{"Cargo: "},
+		},
+		mfd.Page{
+			Lines: []string{locationHeader},
 		},
 	},
 }
+
+// PrevMfd is the previous Mfd written to file, to be used for comparisons and avoid superflous updates.
+var PrevMfd = Mfd
 
 // Start starts the Elite Dangerous journal reader routine
 func Start(cfg conf.Conf) {
 	fmt.Println("Config: ", cfg)
 
-	// Read in the files at start before we start watching, to initialize
-	handleCargoFile(path.Join(cfg.JournalsFolder, FileCargo))
+	tick := time.NewTicker(time.Duration(cfg.RefreshRateMS) * time.Millisecond)
 
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
 	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-				log.Println("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
-				}
-				dispatchEvent(event)
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				log.Println("error:", err)
-			}
+		for range tick.C {
+			// Read in the files at start before we start watching, to initialize
+			journalFile := findJournalFile(cfg.JournalsFolder)
+			handleJournalFile(journalFile)
+
+			handleCargoFile(filepath.Join(cfg.JournalsFolder, FileCargo))
+			swapMfd()
 		}
 	}()
-
-	err = watcher.Add(cfg.JournalsFolder)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // Stop closes the watcher again
 func Stop() {
-	watcher.Close()
+	tick.Stop()
 }
 
-func dispatchEvent(event fsnotify.Event) {
-	if event.Op&fsnotify.Write == fsnotify.Write {
-		log.Println("modified file:", event.Name)
-		if isFileEmpty(event.Name) {
-			return // don't deal with empty files
-		}
-		_, file := filepath.Split(event.Name)
-		switch file {
-		case FileCargo:
-			handleCargoFile(event.Name)
-		}
-	}
+func findJournalFile(folder string) string {
+	files, _ := filepath.Glob(filepath.Join(folder, "Journal.*.*.log"))
+	sort.Strings(files)
+	return files[len(files)-1]
 }
 
-func isFileEmpty(filename string) bool {
-	fi, err := os.Stat(filename)
-	if err != nil {
-		fmt.Println(err)
-		return true
+func swapMfd() {
+	eq := cmp.Equal(Mfd, PrevMfd)
+	if !eq {
+		log.Println("Updating display with new info")
+		mfd.Write(Mfd)
+		PrevMfd = Mfd
 	}
-	return fi.Size() == 0
 }

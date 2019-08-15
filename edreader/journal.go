@@ -1,9 +1,15 @@
 package edreader
 
 import (
+	"bufio"
+	"fmt"
+	"log"
+	"os"
 	"regexp"
 
 	"github.com/buger/jsonparser"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // Journalstate encapsulates the player state baed on the journal
@@ -44,8 +50,9 @@ type Location struct {
 	Body             string
 	BodyType         string
 
-	Latitude  float64
-	Longitude float64
+	Latitude       float64
+	Longitude      float64
+	HasCoordinates bool
 }
 
 const (
@@ -133,6 +140,54 @@ func (p *parser) getFloat(field string) float64 {
 		return 0
 	}
 	return f
+}
+
+// handleJournalFile reads an entire journal file and returns the resulting state
+func handleJournalFile(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Println("Error opening journal file ", filename, err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		ParseJournalLine(scanner.Bytes())
+	}
+
+	cmdr := []string{commanderHeader}
+
+	printer := message.NewPrinter(language.English)
+
+	cmdr = append(cmdr, state.Commander)
+	cmdr = append(cmdr, printer.Sprintf("CR:%d", state.Credits))
+	cmdr = append(cmdr, state.Ship)
+
+	loc := []string{locationHeader}
+	loc = append(loc, state.StarSystem)
+	if state.Docked {
+		loc = append(loc, state.StationName)
+		if len(state.StationType) > 0 {
+			loc = append(loc, state.StationType)
+		}
+		loc = append(loc, "Docked")
+	} else {
+		if state.Body != "" {
+			loc = append(loc, state.Body)
+		}
+		if state.BodyType != "" {
+			loc = append(loc, state.BodyType)
+		}
+	}
+	if state.HasCoordinates {
+		loc = append(loc, fmt.Sprintf("Lat: %.3f", state.Latitude))
+		loc = append(loc, fmt.Sprintf("Lon: %.3f", state.Longitude))
+	}
+
+	Mfd.Pages[pageCommander].Lines = cmdr
+	Mfd.Pages[pageLocation].Lines = loc
 }
 
 // ParseJournalLine parses a single line of the journal and returns the new state after parsing.
@@ -231,6 +286,8 @@ func ParseJournalLine(line []byte) Journalstate {
 		ePromotion(p)
 	case "Reputation":
 		eReputation(p)
+	case "Liftoff":
+		eLiftoff(p)
 	case "AfmuRepairs",
 		"ApproachBody",
 		"ApproachSettlement",
@@ -273,7 +330,6 @@ func ParseJournalLine(line []byte) Journalstate {
 		"LaunchDrone",
 		"LaunchSRV",
 		"LeaveBody",
-		"Liftoff",
 		"Loadout",
 		"Market",
 		"MaterialCollected",
@@ -373,6 +429,11 @@ func eSupercruiseExit(p parser) {
 func eTouchDown(p parser) {
 	state.Latitude = p.getFloat(latitude)
 	state.Longitude = p.getFloat(longitude)
+	state.HasCoordinates = true
+}
+
+func eLiftoff(p parser) {
+	state.HasCoordinates = false
 }
 
 func eDocked(p parser) {

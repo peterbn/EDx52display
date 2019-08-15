@@ -9,8 +9,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-
-	"github.com/peterbn/EDx52display/mfd"
 )
 
 // FileCargo is the name of the processed Cargo file
@@ -43,7 +41,6 @@ func init() {
 }
 
 func handleCargoFile(file string) {
-	log.Println("Loading cargo from file", file)
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		fmt.Println(err)
@@ -57,8 +54,6 @@ func handleCargoFile(file string) {
 	display = append(display, renderCargo(cargo)...)
 
 	Mfd.Pages[pageCargo].Lines = display
-
-	mfd.Write(Mfd)
 }
 
 func renderCargo(cargo Cargo) []string {
