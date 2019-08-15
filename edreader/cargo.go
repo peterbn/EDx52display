@@ -53,7 +53,7 @@ func handleCargoFile(file string) {
 	json.Unmarshal(data, &cargo)
 
 	display := []string{}
-	display = append(display, fmt.Sprintf("Cargo: %d", cargo.Count))
+	display = append(display, fmt.Sprintf("#  Cargo: %3d  #", cargo.Count))
 	display = append(display, renderCargo(cargo)...)
 
 	Mfd.Pages[pageCargo].Lines = display
