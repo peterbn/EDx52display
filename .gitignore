@@ -21,5 +21,7 @@ $RECYCLE.BIN/
 # =========================
 # Operating System Files
 # =========================
-EDx52display.exe
+*.exe
+# Except the required dependency: 
+!X52MFDDriver.exe 
 mfd.json
