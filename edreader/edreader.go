@@ -49,22 +49,23 @@ var PrevMfd = Mfd.Copy()
 // Start starts the Elite Dangerous journal reader routine
 func Start(cfg conf.Conf) {
 	// Update immediately, to ensure the mfd.json file exist
-	updateMFD(cfg)
+	journalfolder := cfg.ExpandJournalFolderPath()
+	updateMFD(journalfolder)
 	tick := time.NewTicker(time.Duration(cfg.RefreshRateMS) * time.Millisecond)
 
 	go func() {
 		for range tick.C {
-			updateMFD(cfg)
+			updateMFD(journalfolder)
 		}
 	}()
 }
 
-func updateMFD(cfg conf.Conf) {
+func updateMFD(journalfolder string) {
 	// Read in the files at start before we start watching, to initialize
-	journalFile := findJournalFile(cfg.JournalsFolder)
+	journalFile := findJournalFile(journalfolder)
 	handleJournalFile(journalFile)
 
-	handleCargoFile(filepath.Join(cfg.JournalsFolder, FileCargo))
+	handleCargoFile(filepath.Join(journalfolder, FileCargo))
 	swapMfd()
 }
 

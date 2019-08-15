@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	"golang.org/x/sys/windows/registry"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -29,4 +31,12 @@ func LoadConf() Conf {
 	}
 
 	return conf
+}
+
+// ExpandJournalFolderPath expands any env variables in the journal folder path.
+func (c Conf) ExpandJournalFolderPath() string {
+	log.Println("Expanding journal path: ", c.JournalsFolder)
+	exp, _ := registry.ExpandString(c.JournalsFolder)
+	log.Println("Expanded value: ", exp)
+	return exp
 }
