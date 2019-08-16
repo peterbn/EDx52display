@@ -35,8 +35,6 @@ func LoadConf() Conf {
 
 // ExpandJournalFolderPath expands any env variables in the journal folder path.
 func (c Conf) ExpandJournalFolderPath() string {
-	log.Println("Expanding journal path: ", c.JournalsFolder)
 	exp, _ := registry.ExpandString(c.JournalsFolder)
-	log.Println("Expanded value: ", exp)
 	return exp
 }

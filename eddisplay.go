@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
 	"os/exec"
+	"syscall"
 
 	"github.com/peterbn/EDx52display/conf"
 	"github.com/peterbn/EDx52display/edreader"
@@ -18,8 +19,9 @@ func main() {
 
 	// Start the file monitor for updates
 	cmd := exec.Command("X52MFDDriver.exe", ".\\"+mfd.Filename)
-	cmd.Stdout = os.Stdout // ensure the driver's output is also sent to the console
 	cmd.Start()
-
+	log.Println("EDx52Display running. Press enter to close.")
 	fmt.Scanln() // keep it running until I get input
+	cmd.Process.Signal(syscall.SIGTERM)
+	cmd.Process.Kill() // and then kill the child process to clean up.
 }
