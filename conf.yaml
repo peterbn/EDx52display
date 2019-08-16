@@ -1,2 +1,2 @@
-journalsfolder: "C:\\Users\\PeterBirk\\Saved Games\\Frontier Developments\\Elite Dangerous"
+journalsfolder: "%USERPROFILE%\\Saved Games\\Frontier Developments\\Elite Dangerous"
 refreshratems: 1000
