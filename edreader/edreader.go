@@ -3,6 +3,7 @@ package edreader
 import (
 	"path/filepath"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
@@ -48,6 +49,9 @@ var Mfd = mfd.Display{
 	},
 }
 
+// MfdLock locks the current MFD for reads and writes
+var MfdLock = sync.RWMutex{}
+
 // PrevMfd is the previous Mfd written to file, to be used for comparisons and avoid superflous updates.
 var PrevMfd = Mfd.Copy()
 
@@ -86,6 +90,8 @@ func findJournalFile(folder string) string {
 }
 
 func swapMfd() {
+	MfdLock.RLock()
+	defer MfdLock.RUnlock()
 	eq := cmp.Equal(Mfd, PrevMfd)
 	if !eq {
 		mfd.Write(Mfd)

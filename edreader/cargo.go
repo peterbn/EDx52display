@@ -55,7 +55,9 @@ func handleCargoFile(file string) {
 	display = append(display, fmt.Sprintf("#  Cargo: %3d  #", cargo.Count))
 	display = append(display, renderCargo(cargo)...)
 
+	MfdLock.Lock()
 	Mfd.Pages[pageCargo] = mfd.Page{Lines: display}
+	MfdLock.Unlock()
 }
 
 func renderCargo(cargo Cargo) []string {

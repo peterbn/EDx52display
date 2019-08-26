@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 )
 
 /*
@@ -61,6 +62,13 @@ func (s System) MainStar() Body {
 	return Body{}
 }
 
+// ClearCache will clear the module cache
+func ClearCache() {
+	cachelock.Lock()
+	defer cachelock.Unlock()
+	sysinfocache = make(map[string]System)
+}
+
 // GetSystemBodies retrieves body information from EDSM.net
 func GetSystemBodies(id64 int64) <-chan EdsmSystemResult {
 	return getBodyInfo(urlBodies, id64)
@@ -72,12 +80,17 @@ func GetSystemValue(id64 int64) <-chan EdsmSystemResult {
 }
 
 var sysinfocache = make(map[string]System)
+var cachelock = sync.RWMutex{}
 
 func getBodyInfo(url string, id64 int64) <-chan EdsmSystemResult {
 	retchan := make(chan EdsmSystemResult)
 	go func() {
 		sysurl := fmt.Sprintf(url, id64)
+
+		cachelock.RLock()
 		cached, ok := sysinfocache[sysurl]
+		cachelock.RUnlock()
+
 		if ok {
 			retchan <- EdsmSystemResult{cached, nil}
 			return
@@ -96,7 +109,10 @@ func getBodyInfo(url string, id64 int64) <-chan EdsmSystemResult {
 		}
 		json.Unmarshal(data, &s)
 
+		cachelock.Lock()
 		sysinfocache[sysurl] = s
+		cachelock.Unlock()
+
 		retchan <- EdsmSystemResult{s, nil}
 	}()
 	return retchan

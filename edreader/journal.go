@@ -172,6 +172,13 @@ func handleJournalFile(filename string) {
 		ParseJournalLine(scanner.Bytes())
 	}
 
+	RefreshDisplay()
+}
+
+// RefreshDisplay updates the display with the current state
+func RefreshDisplay() {
+	MfdLock.Lock()
+	defer MfdLock.Unlock()
 	Mfd.Pages[pageCommander] = mfd.Page{Lines: renderCmdrPage()}
 	Mfd.Pages[pageLocation] = mfd.Page{Lines: renderLocationPage()}
 	Mfd.Pages[pageSysInfo] = mfd.Page{Lines: renderSysInfoPage()}
