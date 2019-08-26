@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/buger/jsonparser"
+	"github.com/peterbn/EDx52display/edsm"
 	"github.com/peterbn/EDx52display/mfd"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -23,6 +24,8 @@ type Journalstate struct {
 
 	Rank
 	Reputation
+
+	TargetSystem
 }
 
 // Rank encapsulates the player's rank
@@ -44,6 +47,7 @@ type Location struct {
 	StationType       string
 	StationAllegiance string
 
+	SystemAddress    int64
 	StarSystem       string
 	SystemSecurity   string
 	SystemAllegiance string
@@ -54,6 +58,12 @@ type Location struct {
 	Latitude       float64
 	Longitude      float64
 	HasCoordinates bool
+}
+
+// TargetSystem indicates a system targeted by the FSD drive for a jump
+type TargetSystem struct {
+	Name          string
+	SystemAddress int64
 }
 
 const (
@@ -71,30 +81,32 @@ const (
 	federation = "Federation"
 	alliance   = "Alliance"
 
-	starsystem  = "StarSystem"
-	docked      = "Docked"
-	body        = "Body"
-	bodytype    = "BodyType"
-	stationname = "StationName"
-	stationtype = "StationType"
-	latitude    = "Latitude"
-	longitude   = "Longitude"
+	systemaddress = "SystemAddress"
+	starsystem    = "StarSystem"
+	docked        = "Docked"
+	body          = "Body"
+	bodytype      = "BodyType"
+	stationname   = "StationName"
+	stationtype   = "StationType"
+	latitude      = "Latitude"
+	longitude     = "Longitude"
 
-	cost          = "Cost"
-	totalcost     = "TotalCost"
-	basevalue     = "BaseValue"
-	bonus         = "Bonus"
-	totalsale     = "TotalSale"
-	reward        = "Reward"
-	totalreward   = "TotalReward"
-	transfercost  = "TransferCost"
-	donation      = "Donation"
-	buyprice      = "BuyPrice"
-	sellprice     = "SellPrice"
-	amount        = "Amount"
-	shipprice     = "ShipPrice"
-	transferprice = "TransferPrice"
-	totalearnings = "TotalEarnings"
+	cost             = "Cost"
+	totalcost        = "TotalCost"
+	basevalue        = "BaseValue"
+	bonus            = "Bonus"
+	totalsale        = "TotalSale"
+	reward           = "Reward"
+	totalreward      = "TotalReward"
+	transfercost     = "TransferCost"
+	donation         = "Donation"
+	buyprice         = "BuyPrice"
+	sellprice        = "SellPrice"
+	amount           = "Amount"
+	shipprice        = "ShipPrice"
+	transferprice    = "TransferPrice"
+	totalearnings    = "TotalEarnings"
+	brokerpercentage = "BrokerPercentage"
 )
 
 var state = Journalstate{}
@@ -143,6 +155,8 @@ func (p *parser) getFloat(field string) float64 {
 	return f
 }
 
+var printer = message.NewPrinter(language.English)
+
 // handleJournalFile reads an entire journal file and returns the resulting state
 func handleJournalFile(filename string) {
 	file, err := os.Open(filename)
@@ -158,15 +172,47 @@ func handleJournalFile(filename string) {
 		ParseJournalLine(scanner.Bytes())
 	}
 
+	Mfd.Pages[pageCommander] = mfd.Page{Lines: renderCmdrPage()}
+	Mfd.Pages[pageLocation] = mfd.Page{Lines: renderLocationPage()}
+	Mfd.Pages[pageSysInfo] = mfd.Page{Lines: renderSysInfoPage()}
+}
+
+func renderCmdrPage() []string {
 	cmdr := []string{commanderHeader}
 
 	printer := message.NewPrinter(language.English)
 
 	cmdr = append(cmdr, state.Commander)
-	cmdr = append(cmdr, printer.Sprintf("CR:%d", state.Credits))
-	cmdr = append(cmdr, state.Ship)
+	cmdr = append(cmdr, "Credits:")
+	cmdr = append(cmdr, printer.Sprintf("%16d", state.Credits))
 
+	cmdr = append(cmdr, "Combat:")
+	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Combat))
+	cmdr = append(cmdr, "Trade:")
+	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Trade))
+	cmdr = append(cmdr, "Exploration:")
+	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Explore))
+	cmdr = append(cmdr, "CQC:")
+	cmdr = append(cmdr, fmt.Sprintf("%16s", state.CQC))
+
+	cmdr = append(cmdr, fmt.Sprintf("Empire:%9.1f", state.Reputation.Empire))
+	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Rank.Empire))
+
+	cmdr = append(cmdr, fmt.Sprintf("Federation:%5.1f", state.Reputation.Federation))
+	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Rank.Federation))
+
+	cmdr = append(cmdr, fmt.Sprintf("Alliance:%7.1f", state.Reputation.Alliance))
+	return cmdr
+}
+
+func renderLocationPage() []string {
 	loc := []string{locationHeader}
+	if state.Supercruise {
+		loc = append(loc, "In Supercruise")
+	}
+	if state.Docked {
+		loc = append(loc, "Docked")
+	}
 	loc = append(loc, state.StarSystem)
 	if state.StationName != "" {
 		loc = append(loc, state.StationName)
@@ -184,15 +230,64 @@ func handleJournalFile(filename string) {
 		loc = append(loc, fmt.Sprintf("Lat: %.3f", state.Latitude))
 		loc = append(loc, fmt.Sprintf("Lon: %.3f", state.Longitude))
 	}
+	return loc
+}
+func renderSysInfoPage() []string {
 
-	if state.Supercruise {
-		loc = append(loc, "In Supercruise")
+	sys := []string{}
+	var sysinfopromise <-chan edsm.EdsmSystemResult
+	var valueinfopromise <-chan edsm.EdsmSystemResult
+	targeting := state.TargetSystem.SystemAddress != 0
+	if targeting {
+
+		sysinfopromise = edsm.GetSystemBodies(state.TargetSystem.SystemAddress)
+		valueinfopromise = edsm.GetSystemValue(state.TargetSystem.SystemAddress)
+		sys = append(sys, "#  System <T>  #")
+		sys = append(sys, state.TargetSystem.Name)
+	} else {
+		sysinfopromise = edsm.GetSystemBodies(state.Location.SystemAddress)
+		valueinfopromise = edsm.GetSystemValue(state.Location.SystemAddress)
+		sys = append(sys, "#  System <C>  #")
+		sys = append(sys, state.Location.StarSystem)
 	}
-	if state.Docked {
-		loc = append(loc, "Docked")
+
+	sysinfo := <-sysinfopromise
+
+	if sysinfo.Error != nil {
+		log.Println("Unable to fetch system information: ", sysinfo.Error)
+		sys = append(sys, "Sysinfo lookup error")
+	} else if sysinfo.S.ID64 == 0 {
+		sys = append(sys, "No EDSM data")
+	} else {
+		mainBody := sysinfo.S.MainStar()
+		if mainBody.IsScoopable {
+			sys = append(sys, "Scoopable")
+		} else {
+			sys = append(sys, "Not scoopable")
+		}
+
+		sys = append(sys, mainBody.SubType)
+
+		sys = append(sys, fmt.Sprintf("Bodies: %d", sysinfo.S.BodyCount))
+
+		valinfo := <-valueinfopromise
+		if valinfo.Error == nil {
+			sys = append(sys, "Scan value:")
+			sys = append(sys, printer.Sprintf("%16d", valinfo.S.EstimatedValue))
+			sys = append(sys, "Mapped value:")
+			sys = append(sys, printer.Sprintf("%16d", valinfo.S.EstimatedValueMapped))
+
+			if len(valinfo.S.ValuableBodies) > 0 {
+				sys = append(sys, "Valuable Bodies:")
+			}
+			for _, valbody := range valinfo.S.ValuableBodies {
+				sys = append(sys, valbody.BodyName)
+				sys = append(sys, printer.Sprintf("%16d", valbody.ValueMax))
+			}
+
+		}
 	}
-	Mfd.Pages[pageCommander] = mfd.Page{Lines: cmdr}
-	Mfd.Pages[pageLocation] = mfd.Page{Lines: loc}
+	return sys
 }
 
 // ParseJournalLine parses a single line of the journal and returns the new state after parsing.
@@ -254,7 +349,7 @@ func ParseJournalLine(line []byte) Journalstate {
 	case "PayLegacyFines":
 		costEvent(p, amount)
 	case "RedeemVoucher":
-		gainEvent(p, amount)
+		eRedeemVoucher(p)
 	case "RefuelAll":
 		costEvent(p, cost)
 	case "RefuelPartial":
@@ -295,6 +390,8 @@ func ParseJournalLine(line []byte) Journalstate {
 		eReputation(p)
 	case "Liftoff":
 		eLiftoff(p)
+	case "FSDTarget":
+		eFSDTarget(p)
 	case "AfmuRepairs",
 		"ApproachBody",
 		"ApproachSettlement",
@@ -323,7 +420,6 @@ func ParseJournalLine(line []byte) Journalstate {
 		"EngineerProgress",
 		"EscapeInterdiction",
 		"Fileheader",
- 		"FSDTarget", // Totally gonna parse this and request information from edsm.net o_O
 		"FSSAllBodiesFound",
 		"FSSDiscoveryScan",
 		"FSSSignalDiscovered",
@@ -411,6 +507,7 @@ func eRank(p parser) {
 func eLocation(p parser) {
 	// clear current location completely
 	state.Location = Location{}
+	state.Location.SystemAddress = p.getInt(systemaddress)
 	state.StarSystem = p.getString(starsystem)
 	state.Docked = p.getBool(docked)
 
@@ -422,10 +519,8 @@ func eLocation(p parser) {
 }
 
 func eSupercruiseEntry(p parser) {
-	state.Location = Location{}
-
+	eLocation(p)
 	state.Supercruise = true
-	state.StarSystem = p.getString(starsystem)
 }
 
 func eSupercruiseExit(p parser) {
@@ -434,6 +529,7 @@ func eSupercruiseExit(p parser) {
 
 func eFSDJump(p parser) {
 	eLocation(p)
+	state.TargetSystem = TargetSystem{}
 	state.Supercruise = true
 }
 
@@ -453,8 +549,7 @@ func eDocked(p parser) {
 }
 
 func eUndocked(p parser) {
-	state.Docked = false
-	state.StationName = p.getString(stationname)
+	eLocation(p)
 }
 
 func costEvent(p parser, key string) {
@@ -493,6 +588,16 @@ func eShipyardSwap(p parser) {
 	state.Ship = p.getString(shiptype)
 }
 
+func eRedeemVoucher(p parser) {
+	total := p.getInt(amount)
+	fee := p.getFloat(brokerpercentage)
+
+	if fee > 0 {
+		total = (total * (100 - int64(fee))) / 100
+	}
+	state.addCredits(total)
+}
+
 func ePromotion(p parser) {
 	state.Combat = combatRank[p.getInt(combat)]
 	state.Trade = tradeRank[p.getInt(trade)]
@@ -504,4 +609,9 @@ func eReputation(p parser) {
 	state.Reputation.Empire = p.getFloat(empire)
 	state.Reputation.Federation = p.getFloat(federation)
 	state.Reputation.Alliance = p.getFloat(alliance)
+}
+
+func eFSDTarget(p parser) {
+	state.TargetSystem.SystemAddress = p.getInt(systemaddress)
+	state.TargetSystem.Name = p.getString(name)
 }

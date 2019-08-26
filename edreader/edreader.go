@@ -21,11 +21,13 @@ const (
 	pageCommander = iota
 	pageCargo
 	pageLocation
+	pageSysInfo
 )
 
 const (
 	commanderHeader = "#     CMDR     #"
 	locationHeader  = "#   Location   #"
+	sysInfoHeader   = "#    System    #"
 )
 
 // Mfd is the MFD display structure that will be used by this module. The number of pages should not be changed
@@ -39,6 +41,9 @@ var Mfd = mfd.Display{
 		},
 		mfd.Page{
 			Lines: []string{locationHeader},
+		},
+		mfd.Page{
+			Lines: []string{sysInfoHeader},
 		},
 	},
 }
