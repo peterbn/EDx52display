@@ -2,14 +2,11 @@ package edreader
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"regexp"
 
 	"github.com/buger/jsonparser"
-	"github.com/peterbn/EDx52display/edsm"
-	"github.com/peterbn/EDx52display/mfd"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -25,7 +22,7 @@ type Journalstate struct {
 	Rank
 	Reputation
 
-	TargetSystem
+	EDSMTarget
 }
 
 // Rank encapsulates the player's rank
@@ -60,10 +57,13 @@ type Location struct {
 	HasCoordinates bool
 }
 
-// TargetSystem indicates a system targeted by the FSD drive for a jump
-type TargetSystem struct {
+// EDSMTarget indicates a system targeted by the FSD drive for a jump
+type EDSMTarget struct {
 	Name          string
 	SystemAddress int64
+
+	BodyTarget bool
+	BodyID     int64
 }
 
 const (
@@ -82,10 +82,12 @@ const (
 	alliance   = "Alliance"
 
 	systemaddress = "SystemAddress"
+	bodyid        = "BodyID"
 	starsystem    = "StarSystem"
 	docked        = "Docked"
 	body          = "Body"
 	bodytype      = "BodyType"
+	bodyname      = "BodyName"
 	stationname   = "StationName"
 	stationtype   = "StationType"
 	latitude      = "Latitude"
@@ -173,128 +175,6 @@ func handleJournalFile(filename string) {
 	}
 
 	RefreshDisplay()
-}
-
-// RefreshDisplay updates the display with the current state
-func RefreshDisplay() {
-	MfdLock.Lock()
-	defer MfdLock.Unlock()
-	Mfd.Pages[pageCommander] = mfd.Page{Lines: renderCmdrPage()}
-	Mfd.Pages[pageLocation] = mfd.Page{Lines: renderLocationPage()}
-	Mfd.Pages[pageSysInfo] = mfd.Page{Lines: renderSysInfoPage()}
-}
-
-func renderCmdrPage() []string {
-	cmdr := []string{commanderHeader}
-
-	printer := message.NewPrinter(language.English)
-
-	cmdr = append(cmdr, state.Commander)
-	cmdr = append(cmdr, "Credits:")
-	cmdr = append(cmdr, printer.Sprintf("%16d", state.Credits))
-
-	cmdr = append(cmdr, "Combat:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Combat))
-	cmdr = append(cmdr, "Trade:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Trade))
-	cmdr = append(cmdr, "Exploration:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Explore))
-	cmdr = append(cmdr, "CQC:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.CQC))
-
-	cmdr = append(cmdr, fmt.Sprintf("Empire:%9.1f", state.Reputation.Empire))
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Rank.Empire))
-
-	cmdr = append(cmdr, fmt.Sprintf("Federation:%5.1f", state.Reputation.Federation))
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Rank.Federation))
-
-	cmdr = append(cmdr, fmt.Sprintf("Alliance:%7.1f", state.Reputation.Alliance))
-	return cmdr
-}
-
-func renderLocationPage() []string {
-	loc := []string{locationHeader}
-	if state.Supercruise {
-		loc = append(loc, "In Supercruise")
-	}
-	if state.Docked {
-		loc = append(loc, "Docked")
-	}
-	loc = append(loc, state.StarSystem)
-	if state.StationName != "" {
-		loc = append(loc, state.StationName)
-	}
-	if len(state.StationType) > 0 {
-		loc = append(loc, state.StationType)
-	}
-	if state.Body != "" {
-		loc = append(loc, state.Body)
-	}
-	if state.BodyType != "" {
-		loc = append(loc, state.BodyType)
-	}
-	if state.HasCoordinates {
-		loc = append(loc, fmt.Sprintf("Lat: %.3f", state.Latitude))
-		loc = append(loc, fmt.Sprintf("Lon: %.3f", state.Longitude))
-	}
-	return loc
-}
-func renderSysInfoPage() []string {
-
-	sys := []string{}
-	var sysinfopromise <-chan edsm.EdsmSystemResult
-	var valueinfopromise <-chan edsm.EdsmSystemResult
-	targeting := state.TargetSystem.SystemAddress != 0
-	if targeting {
-
-		sysinfopromise = edsm.GetSystemBodies(state.TargetSystem.SystemAddress)
-		valueinfopromise = edsm.GetSystemValue(state.TargetSystem.SystemAddress)
-		sys = append(sys, "#  System <T>  #")
-		sys = append(sys, state.TargetSystem.Name)
-	} else {
-		sysinfopromise = edsm.GetSystemBodies(state.Location.SystemAddress)
-		valueinfopromise = edsm.GetSystemValue(state.Location.SystemAddress)
-		sys = append(sys, "#  System <C>  #")
-		sys = append(sys, state.Location.StarSystem)
-	}
-
-	sysinfo := <-sysinfopromise
-
-	if sysinfo.Error != nil {
-		log.Println("Unable to fetch system information: ", sysinfo.Error)
-		sys = append(sys, "Sysinfo lookup error")
-	} else if sysinfo.S.ID64 == 0 {
-		sys = append(sys, "No EDSM data")
-	} else {
-		mainBody := sysinfo.S.MainStar()
-		if mainBody.IsScoopable {
-			sys = append(sys, "Scoopable")
-		} else {
-			sys = append(sys, "Not scoopable")
-		}
-
-		sys = append(sys, mainBody.SubType)
-
-		sys = append(sys, fmt.Sprintf("Bodies: %d", sysinfo.S.BodyCount))
-
-		valinfo := <-valueinfopromise
-		if valinfo.Error == nil {
-			sys = append(sys, "Scan value:")
-			sys = append(sys, printer.Sprintf("%16d", valinfo.S.EstimatedValue))
-			sys = append(sys, "Mapped value:")
-			sys = append(sys, printer.Sprintf("%16d", valinfo.S.EstimatedValueMapped))
-
-			if len(valinfo.S.ValuableBodies) > 0 {
-				sys = append(sys, "Valuable Bodies:")
-			}
-			for _, valbody := range valinfo.S.ValuableBodies {
-				sys = append(sys, valbody.BodyName)
-				sys = append(sys, printer.Sprintf("%16d", valbody.ValueMax))
-			}
-
-		}
-	}
-	return sys
 }
 
 // ParseJournalLine parses a single line of the journal and returns the new state after parsing.
@@ -399,9 +279,11 @@ func ParseJournalLine(line []byte) Journalstate {
 		eLiftoff(p)
 	case "FSDTarget":
 		eFSDTarget(p)
+	case "ApproachBody":
+		eApproachBody(p)
+	case "ApproachSettlement":
+		eApproachSettlement(p)
 	case "AfmuRepairs",
-		"ApproachBody",
-		"ApproachSettlement",
 		"AsteroidCracked",
 		"Cargo",
 		"CargoDepot",
@@ -528,15 +410,25 @@ func eLocation(p parser) {
 func eSupercruiseEntry(p parser) {
 	eLocation(p)
 	state.Supercruise = true
+
+	if state.EDSMTarget.BodyTarget {
+		state.EDSMTarget.BodyTarget = false
+		state.EDSMTarget.SystemAddress = 0
+	}
 }
 
 func eSupercruiseExit(p parser) {
 	eLocation(p)
+
+	if p.getString(bodytype) == "Planet" && !state.EDSMTarget.BodyTarget {
+		// If we don't already have bodyInfo from an approach event
+		eApproachBody(p)
+	}
 }
 
 func eFSDJump(p parser) {
 	eLocation(p)
-	state.TargetSystem = TargetSystem{}
+	state.EDSMTarget = EDSMTarget{}
 	state.Supercruise = true
 }
 
@@ -619,6 +511,24 @@ func eReputation(p parser) {
 }
 
 func eFSDTarget(p parser) {
-	state.TargetSystem.SystemAddress = p.getInt(systemaddress)
-	state.TargetSystem.Name = p.getString(name)
+	state.EDSMTarget.SystemAddress = p.getInt(systemaddress)
+	state.EDSMTarget.Name = p.getString(name)
+	state.EDSMTarget.BodyTarget = false
+
+}
+
+func eApproachBody(p parser) {
+	state.EDSMTarget.SystemAddress = p.getInt(systemaddress)
+	state.EDSMTarget.Name = p.getString(body)
+
+	state.EDSMTarget.BodyTarget = true
+	state.EDSMTarget.BodyID = p.getInt(bodyid)
+}
+
+func eApproachSettlement(p parser) {
+	state.EDSMTarget.SystemAddress = p.getInt(systemaddress)
+	state.EDSMTarget.Name = p.getString(bodyname)
+
+	state.EDSMTarget.BodyTarget = true
+	state.EDSMTarget.BodyID = p.getInt(bodyid)
 }
