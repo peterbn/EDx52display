@@ -11,12 +11,17 @@ import (
 	"golang.org/x/text/message"
 )
 
+// LocationType indicates where in a system the player is
 type LocationType int
 
 const (
+	// LocationSystem means the player is somewhere in the system, not close to a body
 	LocationSystem LocationType = iota
+	// LocationPlanet means the player is close to a planetary body
 	LocationPlanet
+	// LocationLanded indicates the player has touched down
 	LocationLanded
+	// LocationDocked indicates the player has docked at a station (or outpost)
 	LocationDocked
 )
 
