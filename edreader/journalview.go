@@ -6,83 +6,29 @@ import (
 
 	"github.com/peterbn/EDx52display/edsm"
 	"github.com/peterbn/EDx52display/mfd"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 // RefreshDisplay updates the display with the current state
 func RefreshDisplay() {
 	MfdLock.Lock()
 	defer MfdLock.Unlock()
-	Mfd.Pages[pageCommander] = mfd.Page{Lines: renderCmdrPage()}
 	Mfd.Pages[pageLocation] = mfd.Page{Lines: renderLocationPage()}
-	Mfd.Pages[pageSysInfo] = mfd.Page{Lines: renderEDSMData()}
-}
-
-func renderCmdrPage() []string {
-	cmdr := []string{commanderHeader}
-
-	printer := message.NewPrinter(language.English)
-
-	cmdr = append(cmdr, state.Commander)
-	cmdr = append(cmdr, "Credits:")
-	cmdr = append(cmdr, printer.Sprintf("%16d", state.Credits))
-
-	cmdr = append(cmdr, "Combat:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Combat))
-	cmdr = append(cmdr, "Trade:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Trade))
-	cmdr = append(cmdr, "Exploration:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Explore))
-	cmdr = append(cmdr, "CQC:")
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.CQC))
-
-	cmdr = append(cmdr, fmt.Sprintf("Empire:%9.1f", state.Reputation.Empire))
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Rank.Empire))
-
-	cmdr = append(cmdr, fmt.Sprintf("Federation:%5.1f", state.Reputation.Federation))
-	cmdr = append(cmdr, fmt.Sprintf("%16s", state.Rank.Federation))
-
-	cmdr = append(cmdr, fmt.Sprintf("Alliance:%7.1f", state.Reputation.Alliance))
-	return cmdr
+	Mfd.Pages[pageTargetInfo] = mfd.Page{Lines: renderFSDTarget()}
 }
 
 func renderLocationPage() []string {
-	loc := []string{locationHeader}
-	if state.Supercruise {
-		loc = append(loc, "In Supercruise")
+	if state.Type == LocationPlanet || state.Type == LocationLanded {
+		return renderEDSMBody("#     Body     #", state.Location.Body, state.Location.SystemAddress, state.BodyID)
 	}
-	if state.Docked {
-		loc = append(loc, "Docked")
-	}
-	loc = append(loc, state.StarSystem)
-	if state.StationName != "" {
-		loc = append(loc, state.StationName)
-	}
-	if len(state.StationType) > 0 {
-		loc = append(loc, state.StationType)
-	}
-	if state.Body != "" {
-		loc = append(loc, state.Body)
-	}
-	if state.BodyType != "" {
-		loc = append(loc, state.BodyType)
-	}
-	if state.HasCoordinates {
-		loc = append(loc, fmt.Sprintf("Lat: %.3f", state.Latitude))
-		loc = append(loc, fmt.Sprintf("Lon: %.3f", state.Longitude))
-	}
-	return loc
+
+	return renderEDSMSystem("#    System    #", state.Location.StarSystem, state.Location.SystemAddress)
 }
 
-func renderEDSMData() []string {
-	if state.EDSMTarget.BodyTarget {
-		return renderEDSMBody("#     Body     #", state.EDSMTarget.Name, state.EDSMTarget.SystemAddress, state.EDSMTarget.BodyID)
-	} else if state.EDSMTarget.SystemAddress != 0 {
-		return renderEDSMSystem("#  System <T>  #", state.EDSMTarget.Name, state.EDSMTarget.SystemAddress)
-	} else {
-		return renderEDSMSystem("#  System <C>  #", state.Location.StarSystem, state.Location.SystemAddress)
+func renderFSDTarget() []string {
+	if state.EDSMTarget.SystemAddress == 0 {
+		return []string{"No FSD Target"}
 	}
+	return renderEDSMSystem("#  FSD Target  #", state.EDSMTarget.Name, state.EDSMTarget.SystemAddress)
 }
 
 func renderEDSMSystem(header, systemname string, systemaddress int64) []string {

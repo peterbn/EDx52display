@@ -19,32 +19,22 @@ var watcher fsnotify.Watcher
 var tick time.Ticker
 
 const (
-	pageCommander = iota
-	pageCargo
+	pageCargo = iota
 	pageLocation
-	pageSysInfo
-)
-
-const (
-	commanderHeader = "#     CMDR     #"
-	locationHeader  = "#   Location   #"
-	sysInfoHeader   = "#    System    #"
+	pageTargetInfo
 )
 
 // Mfd is the MFD display structure that will be used by this module. The number of pages should not be changed
 var Mfd = mfd.Display{
 	Pages: []mfd.Page{
 		mfd.Page{
-			Lines: []string{commanderHeader},
+			Lines: []string{},
 		},
 		mfd.Page{
-			Lines: []string{"Cargo: "},
+			Lines: []string{},
 		},
 		mfd.Page{
-			Lines: []string{locationHeader},
-		},
-		mfd.Page{
-			Lines: []string{sysInfoHeader},
+			Lines: []string{},
 		},
 	},
 }
