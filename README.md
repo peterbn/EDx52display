@@ -2,8 +2,8 @@
 
 Reading Elite: Dangerous journal information and displaying on a Logitech X52 PRO MFD via [my JSON-based driver](https://github.com/peterbn/X52-pro-MFD-JSON-Driver).
 
-    NOTE: It is recommended to run a tool that uploads data to EDSM, such as [ED Market Connector](https://github.com/Marginal/EDMarketConnector). <br>
-    Doing this will ensure that any new discoveries can be shown on the display.
+**NOTE: It is recommended to run a tool that uploads data to EDSM, such as [ED Market Connector](https://github.com/Marginal/EDMarketConnector). <br>
+Doing this will ensure that any new discoveries can be shown on the display.**
 
 ## Installation
 
@@ -15,9 +15,9 @@ Running this application will show 3 pages of information on your MFD. Most of t
 
 Of particular note is:
 
-- Live view of cargo hold
-- Value of scanning and mapping the system
-- Surface gravity of the planet you are about to land on
+- Live view of cargo hold - *keep track while mining*
+- Value of scanning and mapping the system - *know where to go, without checking system map*
+- Surface gravity of the planet you are about to land on - *avoid becoming a stellar pancacke!*
 
 ### Page 1: Cargo hold
 
@@ -44,8 +44,8 @@ A page with system information will have the following information, sourced from
 - Total value for mapping the entire system
 - Any valuable bodies
 - System Prospecting information
-- - Available elements, with number of planets landable where they occur
-- - The planet in the system with the highest occurence of said element
+  - Available elements, with number of planets landable where they occur
+  - The planet in the system with the highest occurence of said element
 
 ### Planet Page
 
