@@ -36,6 +36,15 @@ type CargoLine struct {
 	NameLocalized string `json:"Name_Localised"`
 }
 
+func (cl CargoLine) displayname() string {
+	name := cl.Name
+	displayName, ok := names[strings.ToLower(name)]
+	if ok {
+		name = displayName
+	}
+	return name
+}
+
 var names map[string]string
 
 func init() {
@@ -51,31 +60,26 @@ func handleCargoFile(file string) {
 	var cargo Cargo
 	json.Unmarshal(data, &cargo)
 
-	display := []string{}
-	display = append(display, fmt.Sprintf("#  Cargo: %3d  #", cargo.Count))
-	display = append(display, renderCargo(cargo)...)
+	page := mfd.NewPage()
+
+	renderCargo(&page, cargo)
 
 	MfdLock.Lock()
-	Mfd.Pages[pageCargo] = mfd.Page{Lines: display}
+	Mfd.Pages[pageCargo] = page
 	MfdLock.Unlock()
 }
 
-func renderCargo(cargo Cargo) []string {
-	display := []string{}
+func renderCargo(page *mfd.Page, cargo Cargo) {
+	page.Add("#  Cargo: %3d  #", cargo.Count)
+	sort.Slice(cargo.Inventory, func(i, j int) bool {
+		a := cargo.Inventory[i]
+		b := cargo.Inventory[j]
+		return a.displayname() < b.displayname()
+	})
 
 	for _, line := range cargo.Inventory {
-		name := line.Name
-		displayName, ok := names[strings.ToLower(name)]
-		if ok {
-			name = displayName
-		}
-		cline := fmt.Sprintf("%s: %d", name, line.Count)
-		display = append(display, cline)
+		page.Add("%s: %d", line.displayname(), line.Count)
 	}
-
-	sort.Strings(display)
-
-	return display
 }
 
 func initNameMap() {

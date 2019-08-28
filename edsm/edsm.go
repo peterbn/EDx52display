@@ -89,8 +89,14 @@ func (s System) BodyByID(bodyID int64) Body {
 }
 
 // ShortName returns the shortened name of the body, without the system name prefix
-func (s System) ShortName(b Body) string {
+func (b Body) ShortName(s System) string {
 	name := b.Name
+	return name[len(s.Name)+1:]
+}
+
+// ShortName returns the shortened name of the body, without the system name prefix
+func (b ValuableBody) ShortName(s System) string {
+	name := b.BodyName
 	return name[len(s.Name)+1:]
 }
 

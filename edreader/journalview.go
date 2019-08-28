@@ -1,9 +1,9 @@
 package edreader
 
 import (
-	"fmt"
 	"log"
 	"sort"
+	"strings"
 
 	"github.com/peterbn/EDx52display/edsm"
 	"github.com/peterbn/EDx52display/mfd"
@@ -13,73 +13,86 @@ import (
 func RefreshDisplay() {
 	MfdLock.Lock()
 	defer MfdLock.Unlock()
-	Mfd.Pages[pageLocation] = mfd.Page{Lines: renderLocationPage()}
-	Mfd.Pages[pageTargetInfo] = mfd.Page{Lines: renderFSDTarget()}
+	Mfd.Pages[pageLocation] = mfd.NewPage()
+	renderLocationPage(&Mfd.Pages[pageLocation])
+	Mfd.Pages[pageTargetInfo] = mfd.NewPage()
+	renderFSDTarget(&Mfd.Pages[pageTargetInfo])
 }
 
-func renderLocationPage() []string {
+func renderLocationPage(page *mfd.Page) {
 	if state.Type == LocationPlanet || state.Type == LocationLanded {
-		return renderEDSMBody("#     Body     #", state.Location.Body, state.Location.SystemAddress, state.BodyID)
+		renderEDSMBody(page, "#     Body     #", state.Location.Body, state.Location.SystemAddress, state.BodyID)
+	} else {
+		renderEDSMSystem(page, "#    System    #", state.Location.StarSystem, state.Location.SystemAddress)
 	}
 
-	return renderEDSMSystem("#    System    #", state.Location.StarSystem, state.Location.SystemAddress)
 }
 
-func renderFSDTarget() []string {
+func renderFSDTarget(page *mfd.Page) {
 	if state.EDSMTarget.SystemAddress == 0 {
-		return []string{"No FSD Target"}
+		page.Add("No FSD Target")
+	} else {
+		renderEDSMSystem(page, "#  FSD Target  #", state.EDSMTarget.Name, state.EDSMTarget.SystemAddress)
 	}
-	return renderEDSMSystem("#  FSD Target  #", state.EDSMTarget.Name, state.EDSMTarget.SystemAddress)
 }
 
-func renderEDSMSystem(header, systemname string, systemaddress int64) []string {
+func renderEDSMSystem(page *mfd.Page, header, systemname string, systemaddress int64) {
 	sysinfopromise := edsm.GetSystemBodies(systemaddress)
 	valueinfopromise := edsm.GetSystemValue(systemaddress)
 
-	sys := []string{header, systemname}
+	page.Add(header)
+	page.Add(systemname)
 
 	sysinfo := <-sysinfopromise
 
 	if sysinfo.Error != nil {
 		log.Println("Unable to fetch system information: ", sysinfo.Error)
-		sys = append(sys, "Sysinfo lookup error")
+		page.Add("Sysinfo lookup error")
+		return
 	}
-	if sysinfo.S.ID64 == 0 {
-		sys = append(sys, "No EDSM data")
-		return sys
+	sys := sysinfo.S
+	if sys.ID64 == 0 {
+		page.Add("No EDSM data")
+		return
 	}
 
-	mainBody := sysinfo.S.MainStar()
+	mainBody := sys.MainStar()
 	if mainBody.IsScoopable {
-		sys = append(sys, "Scoopable")
+		page.Add("Scoopable")
 	} else {
-		sys = append(sys, "Not scoopable")
+		page.Add("Not scoopable")
 	}
 
-	sys = append(sys, mainBody.SubType)
+	page.Add(mainBody.SubType)
 
-	sys = append(sys, fmt.Sprintf("Bodies: %d", sysinfo.S.BodyCount))
+	page.Add("Bodies: %d", sys.BodyCount)
 
 	valinfo := <-valueinfopromise
 	if valinfo.Error == nil {
-		sys = append(sys, "Scan value:")
-		sys = append(sys, printer.Sprintf("%16d", valinfo.S.EstimatedValue))
-		sys = append(sys, "Mapped value:")
-		sys = append(sys, printer.Sprintf("%16d", valinfo.S.EstimatedValueMapped))
+		page.Add("Scan value:")
+		page.Add(printer.Sprintf("%16d", valinfo.S.EstimatedValue))
+		page.Add("Mapped value:")
+		page.Add(printer.Sprintf("%16d", valinfo.S.EstimatedValueMapped))
 
 		if len(valinfo.S.ValuableBodies) > 0 {
-			sys = append(sys, "Valuable Bodies:")
+			page.Add("Valuable Bodies:")
 		}
 		for _, valbody := range valinfo.S.ValuableBodies {
-			sys = append(sys, valbody.BodyName)
-			sys = append(sys, printer.Sprintf("%16d", valbody.ValueMax))
+			bname := valbody.ShortName(sys)
+			valstr := printer.Sprintf("%d", valbody.ValueMax)
+			pad := 1
+			if len(bname)+len(valstr) < 16 {
+				pad = 16 - (len(bname) + len(valstr))
+			}
+			padstr := strings.Repeat(" ", pad)
+			page.Add("%s%s%s", bname, padstr, valstr)
 		}
 	}
 
 	landables := []edsm.Body{}
 	matLocations := map[string][]edsm.Body{}
 
-	for _, b := range sysinfo.S.Bodies {
+	for _, b := range sys.Bodies {
 		if b.IsLandable {
 			landables = append(landables, b)
 			for m := range b.Materials {
@@ -94,10 +107,10 @@ func renderEDSMSystem(header, systemname string, systemaddress int64) []string {
 	}
 
 	if len(landables) == 0 {
-		return sys
+		return
 	}
 
-	sys = append(sys, "Prospecting:")
+	page.Add("Prospecting:")
 	matlist := []string{}
 	for mat := range matLocations {
 		matlist = append(matlist, mat)
@@ -118,40 +131,42 @@ func renderEDSMSystem(header, systemname string, systemaddress int64) []string {
 	})
 	for _, mat := range matlist {
 		bodies := matLocations[mat]
-		sys = append(sys, fmt.Sprintf("%s %d", mat, len(bodies)))
+		page.Add("%s %d", mat, len(bodies))
 		b := bodies[0]
-		sys = append(sys, fmt.Sprintf("%s: %.2f%%", sysinfo.S.ShortName(b), b.Materials[mat]))
+		page.Add("%s: %.2f%%", b.ShortName(sys), b.Materials[mat])
 	}
 
-	return sys
+	return
 }
 
-func renderEDSMBody(header, bodyName string, systemaddress, bodyid int64) []string {
+func renderEDSMBody(page *mfd.Page, header, bodyName string, systemaddress, bodyid int64) {
 	sysinfopromise := edsm.GetSystemBodies(systemaddress)
-	page := []string{header, bodyName}
+	page.Add(header)
+	page.Add(bodyName)
 	sysinfo := <-sysinfopromise
 	if sysinfo.Error != nil {
 		log.Println("Unable to fetch system information: ", sysinfo.Error)
-		page = append(page, "Sysinfo lookup error")
-		return page
+		page.Add("Sysinfo lookup error")
+		return
 	}
-	if sysinfo.S.ID64 == 0 {
-		page = append(page, "No EDSM data")
-		return page
+	sys := sysinfo.S
+	if sys.ID64 == 0 {
+		page.Add("No EDSM data")
+		return
 	}
 
-	body := sysinfo.S.BodyByID(bodyid)
+	body := sys.BodyByID(bodyid)
 	if body.BodyID == 0 {
-		page = append(page, "No EDSM data")
-		return page
+		page.Add("No EDSM data")
+		return
 	}
 
-	page = append(page, fmt.Sprintf("Gravity %7.2fG", body.Gravity))
+	page.Add("Gravity %7.2fG", body.Gravity)
 
-	page = append(page, "Materials:")
+	page.Add("Materials:")
 	for _, m := range body.MaterialsSorted() {
-		page = append(page, fmt.Sprintf("%5.2f%% %s", m.Percentage, m.Name))
+		page.Add("%5.2f%% %s", m.Percentage, m.Name)
 	}
 
-	return page
+	return
 }

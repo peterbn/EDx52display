@@ -30,6 +30,16 @@ type Page struct {
 	Lines []string `json:"lines"`
 }
 
+// NewPage returns a new page
+func NewPage() Page {
+	return Page{Lines: []string{}}
+}
+
+// Add appends a new (optionally formatted) string to the LineBuffer
+func (p *Page) Add(s string, args ...interface{}) {
+	p.Lines = append(p.Lines, fmt.Sprintf(s, args...))
+}
+
 // Copy makes a deep copy of this Page
 func (p Page) Copy() Page {
 	nLines := make([]string, len(p.Lines))
