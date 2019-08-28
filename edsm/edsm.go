@@ -44,6 +44,9 @@ type Body struct {
 
 	Gravity float64
 
+	Volcanism  string
+	IsLandable bool
+
 	Materials map[string]float64
 }
 
@@ -53,6 +56,7 @@ type ValuableBody struct {
 	ValueMax int64
 }
 
+// Material presents a single material and it's presence as a percentage
 type Material struct {
 	Name       string
 	Percentage float64
@@ -82,6 +86,12 @@ func (s System) BodyByID(bodyID int64) Body {
 		}
 	}
 	return Body{}
+}
+
+// ShortName returns the shortened name of the body, without the system name prefix
+func (s System) ShortName(b Body) string {
+	name := b.Name
+	return name[len(s.Name)+1:]
 }
 
 // MaterialsSorted returns the materials of this body in descending sorted order
