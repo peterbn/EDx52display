@@ -21,7 +21,7 @@ func RefreshDisplay() {
 
 func renderLocationPage(page *mfd.Page) {
 	if state.Type == LocationPlanet || state.Type == LocationLanded {
-		renderEDSMBody(page, "#     Body     #", state.Location.Body, state.Location.SystemAddress, state.BodyID)
+		renderEDSMBody(page, "#    Planet    #", state.Location.Body, state.Location.SystemAddress, state.BodyID)
 	} else {
 		renderEDSMSystem(page, "#    System    #", state.Location.StarSystem, state.Location.SystemAddress)
 	}
