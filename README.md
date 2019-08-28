@@ -55,6 +55,16 @@ A page with planet information will have the following data, sourced from EDSM:
 - Planet Gravity (!)
 - Available materials for the planet, if any
 
+## Buttons / Navigation
+
+This tool will use both function wheels on the MFD.
+
+The left wheel will scroll between pages
+
+The right wheel will scroll a page up and down
+
+**Pressing** the right wheel will refresh data from EDSM. The display will cache values from EDSM to avoid hitting their API rate limit. Pressing this button will update with new data, which is useful if you have recently scanned the system and uploaded data with ED Market Connector or similar tools.
+
 ## Troubleshooting
 
 This application reads the journal files of your elite dangerous installation.
