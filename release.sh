@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-rm -rf Release
+go clean
 
-mkdir Release
+rm -rf EDx52Display
 
-cp -r EDx52display.exe conf.yaml LICENSE README.md X52MFDDriver.exe names DepInclude Release/
+mkdir EDx52Display
+
+go build
+
+cp -r EDx52display.exe conf.yaml LICENSE README.md X52MFDDriver.exe names DepInclude EDx52Display/
