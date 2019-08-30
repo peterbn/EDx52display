@@ -69,10 +69,8 @@ func renderEDSMSystem(page *mfd.Page, header, systemname string, systemaddress i
 
 	valinfo := <-valueinfopromise
 	if valinfo.Error == nil {
-		page.Add("Scan value:")
-		page.Add(printer.Sprintf("%16d", valinfo.S.EstimatedValue))
-		page.Add("Mapped value:")
-		page.Add(printer.Sprintf("%16d", valinfo.S.EstimatedValueMapped))
+		page.Add(printer.Sprintf("Scan:%11d", valinfo.S.EstimatedValue))
+		page.Add(printer.Sprintf("Map:%12d", valinfo.S.EstimatedValueMapped))
 
 		if len(valinfo.S.ValuableBodies) > 0 {
 			page.Add("Valuable Bodies:")
