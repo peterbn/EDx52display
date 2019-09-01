@@ -107,7 +107,12 @@ func (b Body) MaterialsSorted() []Material {
 		ms = append(ms, Material{m, p})
 	}
 
-	sort.Slice(ms, func(i, j int) bool { return ms[i].Percentage > ms[j].Percentage })
+	sort.Slice(ms, func(i, j int) bool {
+		if ms[i].Percentage == ms[j].Percentage {
+			return ms[i].Name < ms[j].Name
+		}
+		return ms[i].Percentage > ms[j].Percentage
+	})
 	return ms
 }
 
