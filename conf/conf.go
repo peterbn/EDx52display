@@ -13,8 +13,10 @@ import (
 
 // Conf is the app config
 type Conf struct {
-	JournalsFolder string
-	RefreshRateMS  int
+	JournalsFolder    string
+	RefreshRateMS     int
+	EDSMCommanderName string
+	EDSMAPIKey        string
 }
 
 // LoadConf loads the config from the yaml file
