@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -91,13 +92,19 @@ func (s System) BodyByID(bodyID int64) Body {
 // ShortName returns the shortened name of the body, without the system name prefix
 func (b Body) ShortName(s System) string {
 	name := b.Name
-	return name[len(s.Name)+1:]
+	if strings.HasPrefix(name, s.Name) {
+		return name[len(s.Name)+1:]
+	}
+	return name
 }
 
 // ShortName returns the shortened name of the body, without the system name prefix
 func (b ValuableBody) ShortName(s System) string {
 	name := b.BodyName
-	return name[len(s.Name)+1:]
+	if strings.HasPrefix(name, s.Name) {
+		return name[len(s.Name)+1:]
+	}
+	return name
 }
 
 // MaterialsSorted returns the materials of this body in descending sorted order
