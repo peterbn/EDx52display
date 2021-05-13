@@ -1,9 +1,7 @@
 package mfd
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 )
 
 // Filename is the name of the file written with MFD data
@@ -49,21 +47,5 @@ func (p Page) Copy() Page {
 
 // Write writes the MFD file
 func Write(mfd Display) {
-	data, err := json.Marshal(mfd)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	f, err := os.Create(Filename)
-	if err != nil {
-
-		fmt.Println(err)
-		return
-
-	}
-	defer f.Close()
-
-	f.Write(data)
-	f.Sync()
+	UpdateDisplay(mfd)
 }

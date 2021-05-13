@@ -9,12 +9,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/peterbn/EDx52display/mfd"
 
-	"github.com/fsnotify/fsnotify"
-
 	"github.com/peterbn/EDx52display/conf"
 )
 
-var watcher fsnotify.Watcher
+const DisplayPages = 3
 
 var tick time.Ticker
 
@@ -25,19 +23,7 @@ const (
 )
 
 // Mfd is the MFD display structure that will be used by this module. The number of pages should not be changed
-var Mfd = mfd.Display{
-	Pages: []mfd.Page{
-		mfd.Page{
-			Lines: []string{},
-		},
-		mfd.Page{
-			Lines: []string{},
-		},
-		mfd.Page{
-			Lines: []string{},
-		},
-	},
-}
+var Mfd = mfd.Display{Pages: make([]mfd.Page, DisplayPages)}
 
 // MfdLock locks the current MFD for reads and writes
 var MfdLock = sync.RWMutex{}
