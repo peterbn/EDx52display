@@ -1,6 +1,6 @@
 # EDx52display
 
-Reading Elite: Dangerous journal information and displaying on a Logitech X52 PRO MFD via [my JSON-based driver](https://github.com/peterbn/X52-pro-MFD-JSON-Driver).
+Reading Elite: Dangerous journal information and displaying on a Logitech X52 PRO MFD.
 
 **NOTE: It is recommended to run a tool that uploads data to EDSM, such as [ED Market Connector](https://github.com/Marginal/EDMarketConnector). <br>
 Doing this will ensure that any new discoveries can be shown on the display.**
@@ -63,13 +63,25 @@ The left wheel will scroll between pages
 
 The right wheel will scroll a page up and down
 
-**Pressing** the right wheel will refresh data from EDSM. The display will cache values from EDSM to avoid hitting their API rate limit. Pressing this button will update with new data, which is useful if you have recently scanned the system and uploaded data with ED Market Connector or similar tools.
+**Pressing** the right wheel will refresh data from EDSM. The display will cache values from EDSM to avoid hitting their API rate limit. 
+Pressing this button will update with new data, which is useful if you have recently scanned the system and uploaded data with ED Market Connector or similar tools.
 
 ## Troubleshooting
 
 This application reads the journal files of your elite dangerous installation.
 These are normally located in `%USERPROFILE%\\Saved Games\\Frontier Developments\\Elite Dangerous` on Windows. However, if your installation
 uses a different location, you should update the conf.yaml file in the installation folder.
+
+### Command Line Arguments
+
+- `--log`: Set the desired log level. One of:
+  - panic 
+  - fatal 
+  - error
+  - warning
+  - info (default)
+  - debug 
+  - trace
 
 ## Credits
 
