@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -128,6 +130,7 @@ func ClearCache() {
 	cachelock.Lock()
 	defer cachelock.Unlock()
 	sysinfocache = make(map[string]System)
+	log.Debugln("Cached EDSM information cleared")
 }
 
 // GetSystemBodies retrieves body information from EDSM.net
@@ -144,6 +147,7 @@ var sysinfocache = make(map[string]System)
 var cachelock = sync.RWMutex{}
 
 func getBodyInfo(url string, id64 int64) <-chan SystemResult {
+	log.Traceln("getBodyInfo", url, id64)
 	retchan := make(chan SystemResult)
 	go func() {
 		sysurl := fmt.Sprintf(url, id64)
@@ -153,9 +157,11 @@ func getBodyInfo(url string, id64 int64) <-chan SystemResult {
 		cachelock.RUnlock()
 
 		if ok {
+			log.Trace("system info found in cache")
 			retchan <- SystemResult{cached, nil}
 			return
 		}
+		log.Debugln("Requesting information from EDSM: " + sysurl)
 		resp, err := http.Get(fmt.Sprintf(url, id64))
 		s := System{Bodies: []Body{}}
 		if err != nil {

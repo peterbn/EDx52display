@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/peterbn/EDx52display/mfd"
 
@@ -34,7 +36,9 @@ var PrevMfd = Mfd.Copy()
 // Start starts the Elite Dangerous journal reader routine
 func Start(cfg conf.Conf) {
 	// Update immediately, to ensure the mfd.json file exist
+	log.Info("Starting journal listener")
 	journalfolder := cfg.ExpandJournalFolderPath()
+	log.Debugln("Looking for journal files in " + journalfolder)
 	updateMFD(journalfolder)
 	tick := time.NewTicker(time.Duration(cfg.RefreshRateMS) * time.Millisecond)
 

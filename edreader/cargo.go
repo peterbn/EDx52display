@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"sort"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/peterbn/EDx52display/mfd"
 )
@@ -48,6 +49,7 @@ func (cl CargoLine) displayname() string {
 var names map[string]string
 
 func init() {
+	log.Debugln("Initializing cargo name map...")
 	initNameMap()
 }
 

@@ -2,6 +2,8 @@ package mfd
 
 import (
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // The current device handle
@@ -27,6 +29,7 @@ var currentLines []uint32
 
 // InitDevice sets up the device for use
 func InitDevice(pages uint32, softButtonCallback func()) error {
+	log.Infoln("Initializing device driver...")
 	if pages < 1 {
 		return fmt.Errorf("pages parameter must be a positive integer")
 	}
@@ -37,8 +40,11 @@ func InitDevice(pages uint32, softButtonCallback func()) error {
 
 	buttonCallback = softButtonCallback
 
+	log.Debugln("Initializing driver connection")
 	initialize()
+	log.Debugln("Registering device callbacks")
 	registerDeviceCallback()
+	log.Debugln("Searching for device")
 	enumerate()
 	return nil
 }
@@ -61,13 +67,18 @@ func UpdateDisplay(display Display) error {
 
 func initPages() {
 	if !loaded {
+		log.Debugln("Device found.")
+		log.Debugln("Setting up page button callback")
 		registerPageCallback(device)
+		log.Debugln("Setting up scroll button callback")
 		registerSoftButtonCallback(device)
+		log.Debugln("Adding pages...")
 		for p := uint32(0); p < devicePages; p++ {
 			addPage(p, p == 0)
 		}
 		refreshDisplay()
 		loaded = true
+		log.Debugln("Device init complete")
 	}
 }
 
@@ -90,6 +101,7 @@ func decrementLine() {
 // refreshDisplay refreshes the display to show the current values for page, line and display variables
 func refreshDisplay() {
 	if loaded && device > 0 {
+		log.Debugln("Refreshing display")
 		page := currentDisplay.Pages[currentPage]
 		line := currentLines[currentPage]
 

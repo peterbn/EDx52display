@@ -1,9 +1,10 @@
 package mfd
 
 import (
-	"fmt"
 	"syscall"
 	"unsafe"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -70,7 +71,7 @@ func callProc(procname string, args ...uintptr) {
 	proc := directOutput.NewProc(procname)
 	hresult, _, err := proc.Call(args...)
 	if hresult != S_OK {
-		fmt.Printf("hresult %x\n", hresult)
-		panic(err)
+		log.Warnf("hresult %x\n", hresult)
+		log.Fatalln(err)
 	}
 }

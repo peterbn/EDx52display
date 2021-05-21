@@ -3,8 +3,9 @@ package conf
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"golang.org/x/sys/windows/registry"
 
@@ -19,6 +20,8 @@ type Conf struct {
 
 // LoadConf loads the config from the yaml file
 func LoadConf() Conf {
+	log.Debugln("Loading configuration...")
+	defer log.Debugln("Configuration loaded.")
 	data, err := ioutil.ReadFile("conf.yaml")
 	if err != nil {
 		fmt.Println(err)

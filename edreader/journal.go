@@ -2,9 +2,10 @@ package edreader
 
 import (
 	"bufio"
-	"log"
 	"os"
 	"regexp"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/buger/jsonparser"
 	"golang.org/x/text/language"
@@ -109,9 +110,10 @@ var printer = message.NewPrinter(language.English)
 
 // handleJournalFile reads an entire journal file and returns the resulting state
 func handleJournalFile(filename string) {
+	log.Traceln("Reading journal file " + filename)
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Println("Error opening journal file ", filename, err)
+		log.Warnln("Error opening journal file ", filename, err)
 	}
 	defer file.Close()
 
