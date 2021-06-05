@@ -70,7 +70,13 @@ func setString(page, lineIdx uint32, line string) {
 func callProc(procname string, args ...uintptr) {
 	proc := directOutput.NewProc(procname)
 	hresult, _, err := proc.Call(args...)
-	if hresult != S_OK {
+
+	switch hresult {
+	case S_OK:
+		return
+	case E_PAGENOTACTIVE:
+		log.Warnf("hresult %x (E_PAGENOTACTIVE)\n", hresult)
+	default:
 		log.Warnf("hresult %x\n", hresult)
 		log.Fatalln(err)
 	}
