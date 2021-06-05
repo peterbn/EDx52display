@@ -36,10 +36,9 @@ func onDeviceChanged(hdevice uintptr, added bool, context uintptr) uintptr {
 // The setActive flag indicates whether or not the new page is active (false if the profile page is set)
 func onPageChange(hdevice uintptr, page uint32, setActive bool, context uintptr) uintptr {
 	log.Traceln("onPageChange", page, setActive)
-	if setActive {
-		currentPage = page
-		refreshDisplay()
-	}
+	currentPage = page
+	pageActive = setActive
+	refreshDisplay()
 
 	return S_OK
 }

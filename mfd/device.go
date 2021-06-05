@@ -24,6 +24,9 @@ var currentDisplay Display
 // The currently displayed page
 var currentPage uint32
 
+// Whether or not the current page is active
+var pageActive bool
+
 // The line index for each page
 var currentLines []uint32
 
@@ -76,6 +79,7 @@ func initPages() {
 		for p := uint32(0); p < devicePages; p++ {
 			addPage(p, p == 0)
 		}
+		pageActive = true
 		refreshDisplay()
 		loaded = true
 		log.Debugln("Device init complete")
@@ -100,7 +104,7 @@ func decrementLine() {
 
 // refreshDisplay refreshes the display to show the current values for page, line and display variables
 func refreshDisplay() {
-	if loaded && device > 0 {
+	if loaded && device > 0 && pageActive {
 		log.Debugln("Refreshing display")
 		page := currentDisplay.Pages[currentPage]
 		line := currentLines[currentPage]
