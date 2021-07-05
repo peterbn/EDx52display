@@ -2,6 +2,8 @@
 
 Reading Elite: Dangerous journal information and displaying on a Logitech X52 PRO MFD.
 
+Please note that this software only works with the X52 Pro. The regular X52 HOTAS does not support third-party software for the MFD.
+
 **NOTE: It is recommended to run a tool that uploads data to EDSM, such as [ED Market Connector](https://github.com/Marginal/EDMarketConnector). <br>
 Doing this will ensure that any new discoveries can be shown on the display.**
 
