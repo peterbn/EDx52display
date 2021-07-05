@@ -93,20 +93,19 @@ func (s System) BodyByID(bodyID int64) Body {
 
 // ShortName returns the shortened name of the body, without the system name prefix
 func (b Body) ShortName(s System) string {
-	name := b.Name
-	if strings.HasPrefix(name, s.Name) {
-		return name[len(s.Name)+1:]
-	}
-	return name
+	return shortName(s.Name, b.Name)
 }
 
 // ShortName returns the shortened name of the body, without the system name prefix
 func (b ValuableBody) ShortName(s System) string {
-	name := b.BodyName
-	if strings.HasPrefix(name, s.Name) {
-		return name[len(s.Name)+1:]
+	return shortName(s.Name, b.BodyName)
+}
+
+func shortName(systemName, bodyName string) string {
+	if strings.HasPrefix(bodyName, systemName) && len(bodyName) > len(systemName) {
+		return bodyName[len(systemName)+1:]
 	}
-	return name
+	return bodyName
 }
 
 // MaterialsSorted returns the materials of this body in descending sorted order
