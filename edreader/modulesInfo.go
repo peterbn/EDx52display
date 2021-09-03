@@ -2,7 +2,7 @@ package edreader
 
 import (
 	"encoding/json"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 )
 
@@ -24,7 +24,7 @@ var currentModules ModulesInfo
 func handleModulesInfoFile(file string) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		return
 	}
 
