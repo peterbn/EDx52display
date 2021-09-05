@@ -72,7 +72,7 @@ func handleCargoFile(file string) {
 }
 
 func renderCargo(page *mfd.Page, cargo Cargo) {
-	page.Add("#  Cargo: %3d  #", cargo.Count)
+	page.Add("#Cargo: %03d/%03d#", cargo.Count, ModulesInfoCargoCapacity())
 	sort.Slice(cargo.Inventory, func(i, j int) bool {
 		a := cargo.Inventory[i]
 		b := cargo.Inventory[j]

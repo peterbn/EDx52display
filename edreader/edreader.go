@@ -54,6 +54,7 @@ func updateMFD(journalfolder string) {
 	journalFile := findJournalFile(journalfolder)
 	handleJournalFile(journalFile)
 
+	handleModulesInfoFile(filepath.Join(journalfolder, FileModulesInfo))
 	handleCargoFile(filepath.Join(journalfolder, FileCargo))
 	swapMfd()
 }

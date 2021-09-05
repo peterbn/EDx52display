@@ -9,6 +9,9 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
+# Golang project files
+.idea/*
+
 # Windows Installer files
 *.cab
 *.msi
