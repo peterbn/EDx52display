@@ -10,16 +10,16 @@ import (
 )
 
 // RefreshDisplay updates the display with the current state
-func RefreshDisplay() {
+func RefreshDisplay(state Journalstate) {
 	MfdLock.Lock()
 	defer MfdLock.Unlock()
 	Mfd.Pages[pageLocation] = mfd.NewPage()
-	renderLocationPage(&Mfd.Pages[pageLocation])
+	renderLocationPage(&Mfd.Pages[pageLocation], state)
 	Mfd.Pages[pageTargetInfo] = mfd.NewPage()
-	renderFSDTarget(&Mfd.Pages[pageTargetInfo])
+	renderFSDTarget(&Mfd.Pages[pageTargetInfo], state)
 }
 
-func renderLocationPage(page *mfd.Page) {
+func renderLocationPage(page *mfd.Page, state Journalstate) {
 	if state.Type == LocationPlanet || state.Type == LocationLanded {
 		renderEDSMBody(page, "#    Planet    #", state.Location.Body, state.Location.SystemAddress, state.BodyID)
 	} else {
@@ -28,7 +28,7 @@ func renderLocationPage(page *mfd.Page) {
 
 }
 
-func renderFSDTarget(page *mfd.Page) {
+func renderFSDTarget(page *mfd.Page, state Journalstate) {
 	if state.EDSMTarget.SystemAddress == 0 {
 		page.Add("No FSD Target")
 	} else {

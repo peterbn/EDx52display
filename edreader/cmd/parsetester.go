@@ -19,10 +19,11 @@ func main() {
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
+	state := edreader.Journalstate{}
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		p := edreader.ParseJournalLine(line)
-		fmt.Printf("%#v\n", p)
+		edreader.ParseJournalLine(line, &state)
+		fmt.Printf("%#v\n", state)
 	}
 
 }

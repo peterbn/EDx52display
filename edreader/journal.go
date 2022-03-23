@@ -68,8 +68,6 @@ const (
 	name          = "Name"
 )
 
-var state = Journalstate{}
-
 type parser struct {
 	line []byte
 }
@@ -119,44 +117,43 @@ func handleJournalFile(filename string) {
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
-
+	state := Journalstate{}
 	for scanner.Scan() {
-		ParseJournalLine(scanner.Bytes())
+		ParseJournalLine(scanner.Bytes(), &state)
 	}
 
-	RefreshDisplay()
+	RefreshDisplay(state)
 }
 
 // ParseJournalLine parses a single line of the journal and returns the new state after parsing.
-func ParseJournalLine(line []byte) Journalstate {
+func ParseJournalLine(line []byte, state *Journalstate) {
 	re := regexp.MustCompile(`"event":"(\w*)"`)
 	event := re.FindStringSubmatch(string(line))
 	p := parser{line}
 	switch event[1] {
 	case "Location":
-		eLocation(p)
+		eLocation(p, state)
 	case "SupercruiseEntry":
-		eSupercruiseEntry(p)
+		eSupercruiseEntry(p, state)
 	case "SupercruiseExit":
-		eSupercruiseExit(p)
+		eSupercruiseExit(p, state)
 	case "FSDJump":
-		eFSDJump(p)
+		eFSDJump(p, state)
 	case "Touchdown":
-		eTouchDown(p)
+		eTouchDown(p, state)
 	case "Liftoff":
-		eLiftoff(p)
+		eLiftoff(p, state)
 	case "FSDTarget":
-		eFSDTarget(p)
+		eFSDTarget(p, state)
 	case "ApproachBody":
-		eApproachBody(p)
+		eApproachBody(p, state)
 	case "ApproachSettlement":
-		eApproachSettlement(p)
+		eApproachSettlement(p, state)
 		break
 	}
-	return state
 }
 
-func eLocation(p parser) {
+func eLocation(p parser, state *Journalstate) {
 	// clear current location completely
 	state.Type = LocationSystem
 	state.Location.SystemAddress, _ = p.getInt(systemaddress)
@@ -184,42 +181,42 @@ func eLocation(p parser) {
 	}
 }
 
-func eSupercruiseEntry(p parser) {
+func eSupercruiseEntry(p parser, state *Journalstate) {
 	state.Type = LocationSystem // don't throw away info
 }
 
-func eSupercruiseExit(p parser) {
-	eLocation(p)
+func eSupercruiseExit(p parser, state *Journalstate) {
+	eLocation(p, state)
 }
 
-func eFSDJump(p parser) {
-	eLocation(p)
+func eFSDJump(p parser, state *Journalstate) {
+	eLocation(p, state)
 }
 
-func eTouchDown(p parser) {
+func eTouchDown(p parser, state *Journalstate) {
 	state.Latitude, _ = p.getFloat(latitude)
 	state.Longitude, _ = p.getFloat(longitude)
 	state.Type = LocationLanded
 }
 
-func eLiftoff(p parser) {
+func eLiftoff(p parser, state *Journalstate) {
 	state.Type = LocationPlanet
 }
 
-func eFSDTarget(p parser) {
+func eFSDTarget(p parser, state *Journalstate) {
 	state.EDSMTarget.SystemAddress, _ = p.getInt(systemaddress)
 	state.EDSMTarget.Name, _ = p.getString(name)
 
 }
 
-func eApproachBody(p parser) {
+func eApproachBody(p parser, state *Journalstate) {
 	state.Location.Body, _ = p.getString(body)
 	state.Location.BodyID, _ = p.getInt(bodyid)
 
 	state.Type = LocationPlanet
 }
 
-func eApproachSettlement(p parser) {
+func eApproachSettlement(p parser, state *Journalstate) {
 	state.Location.Body, _ = p.getString(bodyname)
 	state.Location.BodyID, _ = p.getInt(bodyid)
 
