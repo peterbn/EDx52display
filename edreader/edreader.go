@@ -1,8 +1,8 @@
 package edreader
 
 import (
+	"os"
 	"path/filepath"
-	"sort"
 	"sync"
 	"time"
 
@@ -65,9 +65,24 @@ func Stop() {
 }
 
 func findJournalFile(folder string) string {
+	// Based on https://github.com/EDCD/EDMarketConnector/blob/693463d3a0dbe58a1f72b83fc09a44a4398af3fd/monitor.py#L264
+	// because I don't have Odyssey myself
 	files, _ := filepath.Glob(filepath.Join(folder, "Journal.*.*.log"))
-	sort.Strings(files)
-	return files[len(files)-1]
+
+	var lastFileTime time.Time
+	var mostRecentJournal = ""
+
+	for _, filename := range files {
+		info, err := os.Stat(filename)
+		if err != nil {
+			continue
+		}
+		if mostRecentJournal == "" || info.ModTime().After(lastFileTime) {
+			lastFileTime = info.ModTime()
+			mostRecentJournal = filename
+		}
+	}
+	return mostRecentJournal
 }
 
 func swapMfd() {
