@@ -2,10 +2,16 @@
 
 Reading Elite: Dangerous journal information and displaying on a Logitech X52 PRO MFD.
 
+
+> [!WARNING] 
+> This repository is no longer being maintained. If you encounter issues with the latest release, you should go and check out the successor project [EDxDC](https://edxdc.pellux.net/) by [pellux-network](https://github.com/pellux-network/EDxDC)
+
+
 Please note that this software only works with the X52 Pro. The regular X52 HOTAS does not support third-party software for the MFD.
 
-**NOTE: It is recommended to run a tool that uploads data to EDSM, such as [ED Market Connector](https://github.com/Marginal/EDMarketConnector). <br>
-Doing this will ensure that any new discoveries can be shown on the display.**
+> [!NOTE]
+> It is recommended to run a tool that uploads data to EDSM, such as [ED Market Connector](https://github.com/Marginal/EDMarketConnector). <br>
+> Doing this will ensure that any new discoveries can be shown on the display.**
 
 ## Installation
 
